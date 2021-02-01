@@ -20,7 +20,8 @@ class MakeBlackJack:
 
     j_adj = 0
 
-    def __init__(self):
+    def __init__(self, play_count):
+        self.play_count = 100
         self.first_chip = 20
 
     def import_cards(self):
@@ -37,6 +38,12 @@ class MakeBlackJack:
         self.basic_strategy = pd.read_csv('BlackJack_table{}.csv'.format(table_choice))
         self.basic_strategy.index = self.basic_strategy.PC
         self.basic_strategy.drop('PC', axis=1, inplace=True)
+    
+    def setup(self):
+        #前処理
+        self.import_cards()
+        self.import_basic_strategy()
+
 
     def shuffle_card(self, card):
         #カードデッキをシャッフルする
@@ -220,19 +227,62 @@ class MakeBlackJack:
             dealer_score += 10
         elif dealer_score >= 22:
             dealer_score = 'BUST'
+        return dealer_score
 
-        
+    def get_winner(self, dealer_score):
+        """
+        player_scoreとdealer_scoreを比較し，勝敗を算出
+        """
+        player_WL = []
+        for i, score in enumerate(self.player_score):
+            if score == 'BUST':
+                player_WL.append('LOSE')
+            elif score == 21 and len(self.player_card[i]) == 2 and \
+                 dealer_score == 21 and len(dealer_card) == 2:
+                player_WL.append('PUSH')
+            elif score == 21 and len(self.player_card[i]) == 2:
+                player_WL.append('Black Jack')
+            elif dealer_score == 'BUST' and score != 'BUST':
+                player_WL.append('WIN')
+            elif score == dealer_score:
+                player_WL.append('PUSH')
+            elif score >= dealer_score:
+                player_WL.append('WIN')
+            else:
+                player_WL.append('LOSE')
+        return player_WL
 
 
     def main(self):
-        #前処理
-        self.import_cards()
-        self.import_basic_strategy()
         self.shuffle_card()
         self.get_dealer_card()
         self.get_player_card()
-        
-        #プレイヤーがカードを引く処理
-        self.player_draw()
-        #ディーラーがカードを引く処理
-        self.dealer_draw()
+        self.check_natural_black_jack()
+        #掛け金の設定
+        self.bet_chip = [1]
+        #初回なのかスプリットしていないのかを見分けるために設定
+        P_action = 0
+        self.j_adj = 0 #player_cardの処理する場所
+        #スプリットした際の繰り返し
+        while True:
+            #勝負が終わった際の処理
+            if len(self.player_card) != 1 and len(self.player_card[-1]) != 1:
+                break
+            #プレイヤーがスプリットしていない場合
+            if len(self.player_card) == 1 and P_action != 0:
+                break
+            elif len(self.player_card) >= 2:
+                for card in self.player_card:
+                    if len(card) == 1:
+                        self.j_adj = i
+                        break
+                player_card[self.j_adj].append(card_list_index[0])
+                card_list_index.pop(0)
+
+            #プレイヤーがカードを引く処理
+            self.player_draw()
+            #ディーラーがカードを引く処理
+            dealer_score = self.dealer_draw()
+            player_WL = self.get_winner(dealer_score)
+
+        return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL
