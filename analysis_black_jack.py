@@ -15,14 +15,10 @@ class MakeBlackJack:
     player_score = [0] #プレイヤーのスコア
     bet_chip = [1]
 
-    chip_list = []
-    chip_over = 0
-
     j_adj = 0
 
     def __init__(self, play_count):
         self.play_count = 100
-        self.first_chip = 20
 
     def import_cards(self):
         #AからKのカードのリストをインポート
@@ -35,7 +31,7 @@ class MakeBlackJack:
     
     def import_basic_strategy(self):
         #ベーシックストラテジーの表をcsvファイルからインポート
-        self.basic_strategy = pd.read_csv('BlackJack_table{}.csv'.format(table_choice))
+        self.basic_strategy = pd.read_csv('basic_strategy.csv')
         self.basic_strategy.index = self.basic_strategy.PC
         self.basic_strategy.drop('PC', axis=1, inplace=True)
     
@@ -285,4 +281,4 @@ class MakeBlackJack:
             dealer_score = self.dealer_draw()
             player_WL = self.get_winner(dealer_score)
 
-        return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL
+        return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip
