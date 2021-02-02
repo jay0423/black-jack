@@ -1,3 +1,25 @@
+"""
+black jackのシミュレーションを行う．対戦はプレイヤー１人対ディーラーで行っている．
+プレイヤーの行動はベーシックストラテジーに従い，
+S(スタンド), H(ヒット), D(ダブルダウン), P(スプリット)の4パターンで行動を行う．
+
+ブラックジャックは以下の流れで行うルールを採用しています．
+1. トランプのデッキ数はデフォルトで一つ，インスタンス変数'DECK'で数をカスタマイズ可
+2. まずトランプをシャッフルし，プレイヤーとディーラーにカードを上から2枚ずつ配布し，ディーラーのカードの内一枚は裏向きで見えない様になっている．
+3. プレイヤ－はベーシックストラテジーに従い，スタンド,ヒット,ダブルダウン,スプリットの行動を起こす．
+4. プレイヤーのアクションが終了後，ディーラーの裏向きになっているカードを表にする．
+5. ディーラーは自分の手札が17以上になるまで引き続ける．
+6. 勝敗は以下の条件で決まる．
+    ・プレイヤーの手札とディーラーの手札を比較し，21に近い方が勝利．
+    ・22以上はBUSTで敗北．ただしプレイヤーとディーラーがBUSTの場合はディーラーの勝利
+    ・Aと10(J,Q,K)の組み合わせはナチュラルブラックジャック
+    ・同じ数字の場合は引き分け
+以下備考
+    ・スプリットは無制限で行える．
+    ・Aは1か11を選択することができる．
+    ・ディーラーはAと6を持っているとき，プレイヤーの得点を見て引くことを選択することができる．
+"""
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -7,6 +29,7 @@ class MakeBlackJack:
 
     card_list = []
     card_list_index = [] #デッキのカードリスト
+    card_list_index_original = []
     basic_strategy = pd.DataFrame() #ベーシックストラテジーの表
     basic_strategy_original = pd.DataFrame()
 
@@ -29,6 +52,7 @@ class MakeBlackJack:
         for i in range(self.DECK):
             self.card_list_index += list(card_list.index)
         self.card_list = card_list
+        self.card_list_index_original = self.card_list_index.copy()
     
     def import_basic_strategy(self):
         #ベーシックストラテジーの表をcsvファイルからインポート
@@ -263,6 +287,7 @@ class MakeBlackJack:
         self.player_card = [] #プレイヤーのカード
         self.player_score = [0] #プレイヤーのスコア
         self.basic_strategy = self.basic_strategy_original.copy()
+        self.card_list_index = self.card_list_index_original.copy()
 
         
         self.shuffle_card()
@@ -300,6 +325,5 @@ class MakeBlackJack:
         #ディーラーがカードを引く処理
         dealer_score = self.dealer_draw()
         player_WL = self.get_winner(dealer_score)
-        print(self.player_card, self.player_score, self.dealer_card, dealer_score, player_WL, self.bet_chip)
 
         return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.bet_chip
