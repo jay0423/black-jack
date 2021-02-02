@@ -8,24 +8,25 @@ class MakeBlackJack:
     card_list = []
     card_list_index = [] #デッキのカードリスト
     basic_strategy = pd.DataFrame() #ベーシックストラテジーの表
+    basic_strategy_original = pd.DataFrame()
 
     dealer_card = [] #ディーラーのカード
     player_card = [] #プレイヤーのカード
 
     player_score = [0] #プレイヤーのスコア
-    bet_chip = [1]
+    bet_chip = [1] #ベットするチップの枚数（ダブルダウンの時だけ2枚）
 
     j_adj = 0
 
-    def __init__(self, deck=1):
-        self.deck = deck
+    def __init__(self, DECK=1):
+        self.DECK = DECK #使用するトランプのデッキ数
 
     def import_cards(self):
         #AからKのカードのリストをインポート
         card_list = pd.read_csv('playing_card.csv')
         card_list.index = card_list.card_num
         card_list.drop('card_num', axis=1, inplace=True)
-        for i in range(self.deck):
+        for i in range(self.DECK):
             self.card_list_index += list(card_list.index)
         self.card_list = card_list
     
@@ -34,6 +35,7 @@ class MakeBlackJack:
         self.basic_strategy = pd.read_csv('basic_strategy.csv')
         self.basic_strategy.index = self.basic_strategy.PC
         self.basic_strategy.drop('PC', axis=1, inplace=True)
+        self.basic_strategy_original = self.basic_strategy.copy()
     
     def setup(self):
         #前処理
@@ -260,6 +262,7 @@ class MakeBlackJack:
         self.dealer_card = [] #ディーラーのカード
         self.player_card = [] #プレイヤーのカード
         self.player_score = [0] #プレイヤーのスコア
+        self.basic_strategy = self.basic_strategy_original.copy()
 
         
         self.shuffle_card()
@@ -297,7 +300,6 @@ class MakeBlackJack:
         #ディーラーがカードを引く処理
         dealer_score = self.dealer_draw()
         player_WL = self.get_winner(dealer_score)
-        if j > 1:
-            print(self.player_card, self.j_adj, self.player_score, self.dealer_card, dealer_score, player_WL)
+        print(self.player_card, self.player_score, self.dealer_card, dealer_score, player_WL, self.bet_chip)
 
-        return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip
+        return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.bet_chip
