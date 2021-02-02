@@ -31,6 +31,7 @@ class Analysis:
         return pd.DataFrame(dicts)
 
     def edit_df(self, df):
+        #スプリットした回数を追加
         df["split"] = df["player_card"].map(len) - 1
 
         def func2(row):
@@ -47,7 +48,7 @@ class Analysis:
                         ai.append(0)
                 return ai
             return np.dot(func(row["player_WL"]), row["bet_chip"])
-
+        #獲得したコインの枚数を追加
         df["get_coin"] = df.apply(func2, axis=1)
         return df
 
