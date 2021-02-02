@@ -16,16 +16,17 @@ class MakeBlackJack:
     bet_chip = [1]
 
     j_adj = 0
+    split = 0
 
-    def __init__(self, play_count):
-        self.play_count = 100
+    def __init__(self, deck=1):
+        self.deck = deck
 
     def import_cards(self):
         #AからKのカードのリストをインポート
         card_list = pd.read_csv('playing_card.csv')
         card_list.index = card_list.card_num
         card_list.drop('card_num', axis=1, inplace=True)
-        for i in range(deck):
+        for i in range(self.deck):
             self.card_list_index += list(card_list.index)
         self.card_list = card_list
     
@@ -39,33 +40,33 @@ class MakeBlackJack:
         #前処理
         self.import_cards()
         self.import_basic_strategy()
+        return self.card_list_index, self.card_list, self.basic_strategy
 
-
-    def shuffle_card(self, card):
+    def shuffle_card(self):
         #カードデッキをシャッフルする
-        return np.random.shuffle(card)
+        np.random.shuffle(self.card_list_index)
 
     def get_dealer_card(self):
         #ディーラーがカードを引く
-        self.dealer_card = [card_list_index[0], card_list_index[2]]
+        self.dealer_card = [self.card_list_index[0], self.card_list_index[2]]
         del self.card_list_index[:2] #引いた分のカードを削除
 
     def get_player_card(self):
         #プレイヤーがカードを引く
-        self.player_card = [[card_list_index[0], card_list_index[2]]]
+        self.player_card = [[self.card_list_index[0], self.card_list_index[2]]]
         del self.card_list_index[:2] #引いた分のカードを削除
     
     def check_natural_black_jack(self):
         #ディーラーのナチュラルブラックジャック確認
         dealer_score_start = 0
         for i in range(2):
-            dealer_score_start += int(card_list.loc[self.dealer_card[i]].num)
+            dealer_score_start += int(self.card_list.loc[self.dealer_card[i]].num)
         if dealer_score_start == 11 and 'A' in str(self.dealer_card):
             self.basic_strategy.replace(['H', 'D', 'P'], 'S', inplace=True)
 
 
 
-    def make_player_score(self)
+    def make_player_score(self):
         #プレイヤーの点数
         self.player_score[self.j_adj] = 0
         for i in range(len(self.player_card[self.j_adj])):
@@ -78,6 +79,7 @@ class MakeBlackJack:
         """
         #表から行動を決める
         player_card = self.player_card
+        player_score = self.player_score
         j_adj = self.j_adj
         card_list = self.card_list
         #スプリット時の処理
@@ -110,12 +112,12 @@ class MakeBlackJack:
                     PC = player_score[j_adj]
         #ハードハンド
         else:
-            if player_score[j_adj] <= 8:
+            if self.player_score[self.j_adj] <= 8:
                 PC = ':8'
-            elif 17 <= player_score[j_adj] <= 21:
+            elif 17 <= self.player_score[self.j_adj] <= 21:
                 PC = '17:'
             else:
-                PC = player_score[j_adj]
+                PC = self.player_score[self.j_adj]
         return PC
 
     def select_HDPS_from_basic_strategy(self, PC, DC):
@@ -124,7 +126,7 @@ class MakeBlackJack:
         入力 → 縦軸：PC (player card)，横軸：DC (dealer card)
         出力 → H:ヒット, D:ダブルダウン, P:スプリット, S:スタンド
         '''
-        return table.loc[str(PC), str(DC)]
+        return self.basic_strategy.loc[str(PC), str(DC)]
     
     def change_doubledown(self):
         #ダブルダウン処理を無くす
@@ -146,6 +148,7 @@ class MakeBlackJack:
 
     def P_action(self):
         #P_actionがP（スプリット）となった際の処理．
+        self.split += 1
         self.bet_chip.append(self.bet_chip[self.j_adj])
         self.player_card.insert(len(self.player_card), [self.player_card[self.j_adj][1]])
         self.player_card[self.j_adj].pop(1)
@@ -160,7 +163,7 @@ class MakeBlackJack:
             self.make_player_score()
 
             #プレイヤーがバストしたときの処理
-            if player_score[self.j_adj] >= 22:
+            if self.player_score[self.j_adj] >= 22:
                 break
             
             PC = self.decide_PC()
@@ -179,12 +182,14 @@ class MakeBlackJack:
             elif P_action == 'P':
                 self.P_action()
                 break
+        
+    def get_player_score(self):
         #プレイヤーの最終得点
-        for i in range(len(player_score)):
-            if player_score[i] <= 11:
-                player_score[i] += 10
-            elif player_score[i] >= 22:
-                player_score[i] = 'BUST'
+        for i in range(len(self.player_score)):
+            if self.player_score[i] <= 11:
+                self.player_score[i] += 10
+            elif self.player_score[i] >= 22:
+                self.player_score[i] = 'BUST'
 
 
     def dealer_draw(self):
@@ -193,7 +198,7 @@ class MakeBlackJack:
         """
         #プレイヤーのBUSTを数値化
         player_score_B = self.player_score.copy()
-        for score in self.player_score:
+        for i, score in enumerate(self.player_score):
             if score == 'BUST':
                 player_score_B[i] = 0
         #ディーラーがカードを引く
@@ -203,7 +208,7 @@ class MakeBlackJack:
             for card in self.dealer_card:
                 dealer_score += self.card_list.loc[card].num
             #Aが含まれている場合の処理
-            if 'A' in str(dealer_card):
+            if 'A' in str(self.dealer_card):
                 if 18 <= dealer_score + 10 <= 21:
                     break
                 elif 18 <= dealer_score <= 21:
@@ -216,8 +221,8 @@ class MakeBlackJack:
                 if dealer_score >= 17:
                     break
             #ヒット
-            dealer_card.append(card_list_index[0])
-            card_list_index.pop(0)
+            self.dealer_card.append(self.card_list_index[0])
+            self.card_list_index.pop(0)
         #ディーラーの最終得点
         if dealer_score <= 11:
             dealer_score += 10
@@ -234,7 +239,7 @@ class MakeBlackJack:
             if score == 'BUST':
                 player_WL.append('LOSE')
             elif score == 21 and len(self.player_card[i]) == 2 and \
-                 dealer_score == 21 and len(dealer_card) == 2:
+                 dealer_score == 21 and len(self.dealer_card) == 2:
                 player_WL.append('PUSH')
             elif score == 21 and len(self.player_card[i]) == 2:
                 player_WL.append('Black Jack')
@@ -257,28 +262,36 @@ class MakeBlackJack:
         #掛け金の設定
         self.bet_chip = [1]
         #初回なのかスプリットしていないのかを見分けるために設定
-        P_action = 0
+        self.split = 0
         self.j_adj = 0 #player_cardの処理する場所
         #スプリットした際の繰り返し
+        j = 0
         while True:
             #勝負が終わった際の処理
             if len(self.player_card) != 1 and len(self.player_card[-1]) != 1:
+                print(1)
                 break
             #プレイヤーがスプリットしていない場合
-            if len(self.player_card) == 1 and P_action != 0:
+            if len(self.player_card) == 1 and j != 0:
+                print(2)
                 break
             elif len(self.player_card) >= 2:
-                for card in self.player_card:
+                for i, card in enumerate(self.player_card):
                     if len(card) == 1:
                         self.j_adj = i
                         break
-                player_card[self.j_adj].append(card_list_index[0])
-                card_list_index.pop(0)
-
+                self.player_card[self.j_adj].append(self.card_list_index[0])
+                self.card_list_index.pop(0)
+            
             #プレイヤーがカードを引く処理
+            print(self.player_card)
             self.player_draw()
-            #ディーラーがカードを引く処理
-            dealer_score = self.dealer_draw()
-            player_WL = self.get_winner(dealer_score)
+            j += 1
+        #プレイヤーのスコアを算出
+        self.get_player_score()
+        #ディーラーがカードを引く処理
+        dealer_score = self.dealer_draw()
+        player_WL = self.get_winner(dealer_score)
+        print(self.player_card, self.split, self.j_adj, self.player_score, self.dealer_card, dealer_score, player_WL)
 
         return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip
