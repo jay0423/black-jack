@@ -1,11 +1,14 @@
-
+"""
+black_jack.pyから，データを取得してデータフレームを作成する．
+self.GAME_TIME：ブラックジャックのプレイ回数
+"""
 
 import pandas as pd
 import numpy as np
 import black_jack as bj
 
 
-class Analysis:
+class MakeDataFrame:
 
     player_card = []
     dealer_card = []
@@ -13,19 +16,23 @@ class Analysis:
     dealer_score = []
     player_WL = []
     bet_chip = []
+    play_counts = []
 
-    def __init__(self, GAME_TIME=10000):
-        self.a = bj.MakeBlackJack(5)
+    def __init__(self, GAME_TIME=100000, DECK=5, RE_PLAY=False, MAX_PLAY_COUNTS=5):
+        self.a = bj.MakeBlackJack(DECK)
         self.GAME_TIME = GAME_TIME
+        self.RE_PLAY = RE_PLAY
+        self.MAX_PLAY_COUNTS = MAX_PLAY_COUNTS
 
     def get_game(self):
-        (player_card, dealer_card, player_score, dealer_score, player_WL, bet_chip, bet_chip) = self.a.main()
+        (player_card, dealer_card, player_score, dealer_score, player_WL, bet_chip, play_counts) = self.a.main()
         self.player_card.append(player_card)
         self.dealer_card.append(dealer_card)
         self.player_score.append(player_score)
         self.dealer_score.append(dealer_score)
         self.player_WL.append(player_WL)
         self.bet_chip.append(bet_chip)
+        self.play_counts.append(play_counts)
 
     def make_df(self, dicts):
         return pd.DataFrame(dicts)
@@ -55,6 +62,9 @@ class Analysis:
     def main(self):
         self.a.setup()
         for i in range(self.GAME_TIME):
+            if self.RE_PLAY:
+                if self.MAX_PLAY_COUNTS == self.a.play_counts:
+                    self.a.play_counts = 0
             self.get_game()
         dicts = {
             "player_card": self.player_card,
@@ -62,8 +72,13 @@ class Analysis:
             "player_score": self.player_score,
             "dealer_score": self.dealer_score,
             "player_WL": self.player_WL,
-            "bet_chip": self.bet_chip
+            "bet_chip": self.bet_chip,
+            "play_counts": self.play_counts,
         }
         df = self.make_df(dicts)
         df = self.edit_df(df)
         return df
+
+if __name__ == "__main__":
+    a = MakeDataFrame(10000, 5, True, 10)
+    a.main()

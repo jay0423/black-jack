@@ -1,9 +1,20 @@
 """
-black jackのシミュレーションを行う．対戦はプレイヤー１人対ディーラーで行っている．
+black jackのシミュレーションを行う．対戦はプレイヤー１人対ディーラーで1回のみ戦う．
+
+出力
+    出力は以下の6つである．
+    スプリットも考慮するため，基本的に各要素はlistで出力される．
+    1. プレイヤーの最終的な手札 (list in list)
+    2. ディーラーの最終的な手札 (list)
+    3. プレイヤーの手札のスコア (list)｜1~21 or BUST 
+    4. ディーラーの手札のスコア (str)｜17~21 or BUST 
+    5. プレイヤーの勝敗 (list)｜WIN, LOSE, PUSH or Black Jack
+    6. ベットしたチップ枚数 (list)｜1 or 2 (ダブルダウンしたときのみ2)
+
 プレイヤーの行動はベーシックストラテジーに従い，
 S(スタンド), H(ヒット), D(ダブルダウン), P(スプリット)の4パターンで行動を行う．
 
-ブラックジャックは以下の流れで行うルールを採用しています．
+ブラックジャックは以下の流れで行うルールを採用している．
 1. トランプのデッキ数はデフォルトで一つ，インスタンス変数'DECK'で数をカスタマイズ可
 2. まずトランプをシャッフルし，プレイヤーとディーラーにカードを上から2枚ずつ配布し，ディーラーのカードの内一枚は裏向きで見えない様になっている．
 3. プレイヤ－はベーシックストラテジーに従い，スタンド,ヒット,ダブルダウン,スプリットの行動を起こす．
@@ -50,6 +61,7 @@ class MakeBlackJack:
 
     def __init__(self, DECK=1):
         self.DECK = DECK #使用するトランプのデッキ数
+        self.play_counts = 0 #プレイしている回数
 
     def import_cards(self):
         #AからKのカードのリストをインポート
@@ -306,10 +318,12 @@ class MakeBlackJack:
         self.player_card = [] #プレイヤーのカード
         self.player_score = [0] #プレイヤーのスコア
         self.basic_strategy_list = self.basic_strategy_original_list.copy()
-        self.card_list_index = self.card_list_index_original.copy()
 
-        
-        self.shuffle_card()
+        self.play_counts += 1
+        if self.play_counts != 1: #連続で対戦する場合はシャッフルしない．
+            self.card_list_index = self.card_list_index_original.copy()
+            self.shuffle_card()
+
         self.get_dealer_card()
         self.get_player_card()
         self.check_natural_black_jack()
@@ -345,4 +359,9 @@ class MakeBlackJack:
         dealer_score = self.dealer_draw()
         player_WL = self.get_winner(dealer_score)
 
-        return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.bet_chip
+        return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.play_counts
+    
+if __name__ == "__main__":
+    a = MakeBlackJack()
+    a.setup()
+    a.main()
