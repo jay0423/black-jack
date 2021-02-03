@@ -8,7 +8,7 @@ import time
 
 class MakeBlackJack:
 
-    card_list = []
+    card_dict = {}
     card_list_index = [] #デッキのカードリスト
     card_list_index_original = []
     basic_strategy = pd.DataFrame() #ベーシックストラテジーの表
@@ -101,7 +101,7 @@ class MakeBlackJack:
         card_list.drop('card_num', axis=1, inplace=True)
         for i in range(self.DECK):
             self.card_list_index += list(card_list.index)
-        self.card_list = card_list
+        self.card_dict = dict(zip(list(card_list.index), list(card_list.num)))
         self.card_list_index_original = self.card_list_index.copy()
     
     # @StopWatch
@@ -123,7 +123,7 @@ class MakeBlackJack:
         self.import_cards()
         self.import_basic_strategy()
         self.make_replaced_basic_strategy()
-        return self.card_list_index, self.card_list, self.basic_strategy
+        return self.card_list_index, self.card_dict, self.basic_strategy
 
     @StopWatch
     def shuffle_card(self):
@@ -147,7 +147,7 @@ class MakeBlackJack:
         #ディーラーのナチュラルブラックジャック確認
         dealer_score_start = 0
         for i in range(2):
-            dealer_score_start += int(self.card_list.loc[self.dealer_card[i]].num)
+            dealer_score_start += int(self.card_dict[self.dealer_card[i]])
         if dealer_score_start == 11 and 'A' in str(self.dealer_card):
             self.basic_strategy = self.basic_strategy_HDP_S.copy()
 
@@ -157,8 +157,8 @@ class MakeBlackJack:
     def make_player_score(self):
         #プレイヤーの点数
         self.player_score[self.j_adj] = 0
-        for i in range(len(self.player_card[self.j_adj])):
-            self.player_score[self.j_adj] += int(self.card_list.loc[self.player_card[self.j_adj][i]].num)
+        for card in self.player_card[self.j_adj]:
+            self.player_score[self.j_adj] += int(self.card_dict[card])
 
 
     @StopWatch
@@ -170,14 +170,14 @@ class MakeBlackJack:
         player_card = self.player_card
         player_score = self.player_score
         j_adj = self.j_adj
-        card_list = self.card_list
+        card_dict = self.card_dict
         #スプリット時の処理
-        if card_list.loc[player_card[j_adj][0]].num == card_list.loc[player_card[j_adj][1]].num \
+        if card_dict[player_card[j_adj][0]] == card_dict[player_card[j_adj][1]] \
             and len(player_card[j_adj]) == 2 and player_card[j_adj][0][0] != 'A':
             if str(player_card[j_adj]).count('A') == 2:
                 PC = 'AA'
             else:
-                PC = str(card_list.loc[player_card[j_adj][0]].num) + str(card_list.loc[player_card[j_adj][1]].num)
+                PC = str(card_dict[player_card[j_adj][0]]) + str(card_dict[player_card[j_adj][1]])
         #ソフトハンド
         elif 'A' in str(player_card[j_adj]):
             if len(player_card[j_adj]) == 2 and player_score == 11:
@@ -190,7 +190,7 @@ class MakeBlackJack:
                         break
                 remainder = 0
                 for i in range(len(player_card_check)):
-                    remainder += card_list.loc[player_card_check[i]].num
+                    remainder += card_dict[player_card_check[i]]
                 if remainder <= 10:
                     PC = 'A' + str(remainder)
                     if PC =='A1': #スプリットした際に生じるバグの修正
@@ -235,7 +235,7 @@ class MakeBlackJack:
         #P_actionがD（ダブルダウン）となった際の処理．
         self.bet_chip[self.j_adj] += self.bet_chip[self.j_adj]
         self.player_card[self.j_adj].append(self.card_list_index[0])
-        self.player_score[self.j_adj] += int(self.card_list.loc[self.card_list_index[0]].num)
+        self.player_score[self.j_adj] += int(self.card_dict[self.card_list_index[0]])
         self.card_list_index.pop(0)
 
     @StopWatch
@@ -260,7 +260,7 @@ class MakeBlackJack:
                 break
             
             PC = self.decide_PC()
-            DC = self.card_list.loc[self.dealer_card[1]].num
+            DC = self.card_dict[self.dealer_card[1]]
             #プレイヤーの行動を取得
             P_action = self.select_HDPS_from_basic_strategy(PC, DC)
             
@@ -301,7 +301,7 @@ class MakeBlackJack:
             #ディーラーのスコア
             dealer_score = 0
             for card in self.dealer_card:
-                dealer_score += self.card_list.loc[card].num
+                dealer_score += self.card_dict[card]
             #Aが含まれている場合の処理
             if 'A' in str(self.dealer_card):
                 if 18 <= dealer_score + 10 <= 21:
