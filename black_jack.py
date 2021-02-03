@@ -31,10 +31,14 @@ class MakeBlackJack:
     card_list_index = [] #デッキのカードリスト
     card_list_index_original = []
     basic_strategy = pd.DataFrame() #ベーシックストラテジーの表
-    basic_strategy_original = pd.DataFrame()
+    #DataFrameだと.locの処理に時間を要するため，ベーシックストラテジーをリストに変換して使用する．
+    basic_strategy_list = []
+    basic_strategy_original_list = []
+    basic_strategy_index = []
+    basic_strategy_columns = []
     ##時間短縮させるため，セットアップ時に置換の処理を終わらせておく
-    basic_strategy_HDP_S  = pd.DataFrame()
-    basic_strategy_D_H  = pd.DataFrame()
+    basic_strategy_HDP_S  = []
+    basic_strategy_D_H  = []
 
     dealer_card = [] #ディーラーのカード
     player_card = [] #プレイヤーのカード
@@ -62,13 +66,18 @@ class MakeBlackJack:
         self.basic_strategy = pd.read_csv('csv/basic_strategy.csv')
         self.basic_strategy.index = self.basic_strategy.PC
         self.basic_strategy.drop('PC', axis=1, inplace=True)
-        self.basic_strategy_original = self.basic_strategy.copy()
+        self.basic_strategy_list = [list(self.basic_strategy.iloc[i]) for i in range(len(self.basic_strategy))]
+        self.basic_strategy_columns = list(self.basic_strategy.columns)
+        self.basic_strategy_index = list(self.basic_strategy.index)
+        self.basic_strategy_original_list = self.basic_strategy_list.copy()
 
     def make_replaced_basic_strategy(self):
         ##時間短縮させるため，セットアップ時に置換の処理を終わらせておく
-        self.basic_strategy_HDP_S = self.basic_strategy.replace(['H', 'D', 'P'], 'S')
-        self.basic_strategy_D_H = self.basic_strategy.replace('D', 'H')
-        self.basic_strategy_D_H.iloc[15, 1:5] = 'S' #A17を変更
+        basic_strategy_HDP_S = self.basic_strategy.replace(['H', 'D', 'P'], 'S')
+        self.basic_strategy_HDP_S =  [list(basic_strategy_HDP_S.iloc[i]) for i in range(len(basic_strategy_HDP_S))]
+        basic_strategy_D_H = self.basic_strategy.replace('D', 'H')
+        basic_strategy_D_H.iloc[15, 1:5] = 'S' #A17を変更
+        self.basic_strategy_D_H = [list(basic_strategy_D_H.iloc[i]) for i in range(len(basic_strategy_D_H))]
 
     def setup(self):
         #前処理
@@ -97,7 +106,7 @@ class MakeBlackJack:
         for i in range(2):
             dealer_score_start += int(self.card_dict[self.dealer_card[i]])
         if dealer_score_start == 11 and 'A' in str(self.dealer_card):
-            self.basic_strategy = self.basic_strategy_HDP_S.copy()
+            self.basic_strategy_list = self.basic_strategy_HDP_S.copy()
 
 
 
@@ -161,11 +170,12 @@ class MakeBlackJack:
         入力 → 縦軸：PC (player card)，横軸：DC (dealer card)
         出力 → H:ヒット, D:ダブルダウン, P:スプリット, S:スタンド
         '''
-        return self.basic_strategy.loc[str(PC), str(DC)]
+        #DataFrameだと.locの処理に時間を要するため，ベーシックストラテジーをリストに変換して使用する．
+        return self.basic_strategy_list[PC][DC]
     
     def change_doubledown(self):
         #ダブルダウン処理を無くす
-        self.basic_strategy = self.basic_strategy_D_H.copy()
+        self.basic_strategy_list = self.basic_strategy_D_H.copy()
 
     def get_H_action(self):
         #P_actionがH（ヒット）となった際の処理．
@@ -203,7 +213,7 @@ class MakeBlackJack:
             PC = self.decide_PC()
             DC = self.card_dict[self.dealer_card[1]]
             #プレイヤーの行動を取得
-            P_action = self.select_HDPS_from_basic_strategy(PC, DC)
+            P_action = self.select_HDPS_from_basic_strategy(self.basic_strategy_index.index(str(PC)), self.basic_strategy_columns.index(str(DC)))
             
             #プレイヤーが行動を実行
             if P_action == 'S':
@@ -295,7 +305,7 @@ class MakeBlackJack:
         self.dealer_card = [] #ディーラーのカード
         self.player_card = [] #プレイヤーのカード
         self.player_score = [0] #プレイヤーのスコア
-        self.basic_strategy = self.basic_strategy_original.copy()
+        self.basic_strategy_list = self.basic_strategy_original_list.copy()
         self.card_list_index = self.card_list_index_original.copy()
 
         
