@@ -29,7 +29,6 @@ class MakeBlackJack:
         self.time_dict = {
             "import_cards": 0,
             "import_basic_strategy": 0,
-            "setup": 0,
             "shuffle_card": 0,
             "get_dealer_card": 0,
             "get_player_card": 0,
@@ -37,17 +36,14 @@ class MakeBlackJack:
             "make_player_score": 0,
             "decide_PC": 0,
             "select_HDPS_from_basic_strategy": 0,
-            "change_doubledown": 0,
             "get_H_action": 0,
             "get_D_action": 0,
             "get_P_action": 0,
-            "player_draw": 0,
             "get_player_score": 0,
             "dealer_draw": 0,
             "get_winner": 0
         }
         self.times = 0
-        self.time_dict_percent = {}
 
     def StopWatch(func) :
         @wraps(func)
@@ -86,7 +82,6 @@ class MakeBlackJack:
         self.basic_strategy.drop('PC', axis=1, inplace=True)
         self.basic_strategy_original = self.basic_strategy.copy()
     
-    @StopWatch
     def setup(self):
         #前処理
         self.import_cards()
@@ -186,7 +181,6 @@ class MakeBlackJack:
         '''
         return self.basic_strategy.loc[str(PC), str(DC)]
     
-    @StopWatch
     def change_doubledown(self):
         #ダブルダウン処理を無くす
         self.basic_strategy.replace('D', 'H', inplace=True)
@@ -219,7 +213,6 @@ class MakeBlackJack:
         if 'A' in self.player_card[self.j_adj][0]:
             self.change_doubledown()
 
-    @StopWatch
     def player_draw(self):
         #プレイヤ―がヒットし続けるまで処理を続ける．
         while True:
