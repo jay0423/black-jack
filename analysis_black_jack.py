@@ -5,6 +5,7 @@ self.GAME_TIME：ブラックジャックのプレイ回数
 
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 import black_jack as bj
 
 
@@ -61,7 +62,7 @@ class MakeDataFrame:
 
     def main(self):
         self.a.setup()
-        for i in range(self.GAME_TIME):
+        for i in tqdm(range(self.GAME_TIME)):
             if self.RE_PLAY:
                 if self.MAX_PLAY_COUNTS == self.a.play_counts:
                     self.a.play_counts = 0
