@@ -27,8 +27,8 @@ class MakeBlackJack:
         self.DECK = DECK #使用するトランプのデッキ数
         ##time
         self.time_dict = {
-            "import_cards": 0,
-            "import_basic_strategy": 0,
+            # "import_cards": 0,
+            # "import_basic_strategy": 0,
             "shuffle_card": 0,
             "get_dealer_card": 0,
             "get_player_card": 0,
@@ -36,6 +36,25 @@ class MakeBlackJack:
             "make_player_score": 0,
             "decide_PC": 0,
             "select_HDPS_from_basic_strategy": 0,
+            "change_doubledown": 0,
+            "get_H_action": 0,
+            "get_D_action": 0,
+            "get_P_action": 0,
+            "get_player_score": 0,
+            "dealer_draw": 0,
+            "get_winner": 0
+        }
+        self.num_time_dict = {
+            # "import_cards": 0,
+            # "import_basic_strategy": 0,
+            "shuffle_card": 0,
+            "get_dealer_card": 0,
+            "get_player_card": 0,
+            "check_natural_black_jack": 0,
+            "make_player_score": 0,
+            "decide_PC": 0,
+            "select_HDPS_from_basic_strategy": 0,
+            "change_doubledown": 0,
             "get_H_action": 0,
             "get_D_action": 0,
             "get_P_action": 0,
@@ -52,6 +71,7 @@ class MakeBlackJack:
             result = func(self, *args,**kargs)
             elapsed_time =  time.time() - start
             self.time_dict[str(func.__name__)] += elapsed_time
+            self.num_time_dict[str(func.__name__)] += 1
             self.times += elapsed_time
             # print(f"{func.__name__}は{elapsed_time}秒かかりました")
             return result
@@ -63,7 +83,14 @@ class MakeBlackJack:
         keys = list(self.time_dict)
         return dict(zip(keys, values))
     
-    @StopWatch
+    def percent_per_one(self):
+        values = [a / b for a, b in zip(list(self.time_dict.values()), list(self.num_time_dict.values()))]
+        total = sum(values)
+        values = list(map(lambda x: round(x/total*100, 1), values))
+        keys = list(self.time_dict)
+        return dict(zip(keys, values))
+
+    # @StopWatch
     def import_cards(self):
         #AからKのカードのリストをインポート
         card_list = pd.read_csv('../csv/playing_card.csv')
@@ -74,7 +101,7 @@ class MakeBlackJack:
         self.card_list = card_list
         self.card_list_index_original = self.card_list_index.copy()
     
-    @StopWatch
+    # @StopWatch
     def import_basic_strategy(self):
         #ベーシックストラテジーの表をcsvファイルからインポート
         self.basic_strategy = pd.read_csv('../csv/basic_strategy.csv')
@@ -181,6 +208,7 @@ class MakeBlackJack:
         '''
         return self.basic_strategy.loc[str(PC), str(DC)]
     
+    @StopWatch
     def change_doubledown(self):
         #ダブルダウン処理を無くす
         self.basic_strategy.replace('D', 'H', inplace=True)
