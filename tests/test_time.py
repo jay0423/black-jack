@@ -1,8 +1,9 @@
-from stop_watch import StopWatch
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from functools import wraps
+import time
 
 
 class MakeBlackJack:
@@ -20,10 +21,52 @@ class MakeBlackJack:
     bet_chip = [1] #ベットするチップの枚数（ダブルダウンの時だけ2枚）
 
     j_adj = 0
+    
 
     def __init__(self, DECK=1):
         self.DECK = DECK #使用するトランプのデッキ数
+        ##time
+        self.time_dict = {
+            "import_cards": 0,
+            "import_basic_strategy": 0,
+            "setup": 0,
+            "shuffle_card": 0,
+            "get_dealer_card": 0,
+            "get_player_card": 0,
+            "check_natural_black_jack": 0,
+            "make_player_score": 0,
+            "decide_PC": 0,
+            "select_HDPS_from_basic_strategy": 0,
+            "change_doubledown": 0,
+            "get_H_action": 0,
+            "get_D_action": 0,
+            "get_P_action": 0,
+            "player_draw": 0,
+            "get_player_score": 0,
+            "dealer_draw": 0,
+            "get_winner": 0
+        }
+        self.times = 0
+        self.time_dict_percent = {}
 
+    def StopWatch(func) :
+        @wraps(func)
+        def wrapper(self, *args, **kargs) :
+            start = time.time()
+            result = func(self, *args,**kargs)
+            elapsed_time =  time.time() - start
+            self.time_dict[str(func.__name__)] += elapsed_time
+            self.times += elapsed_time
+            # print(f"{func.__name__}は{elapsed_time}秒かかりました")
+            return result
+        return wrapper
+    
+    def percent(self):
+        total = sum(self.time_dict.values())
+        values = list(map(lambda x: round(x/total*100, 1), list(self.time_dict.values())))
+        keys = list(self.time_dict)
+        return dict(zip(keys, values))
+    
     @StopWatch
     def import_cards(self):
         #AからKのカードのリストをインポート
@@ -323,5 +366,5 @@ class MakeBlackJack:
         #ディーラーがカードを引く処理
         dealer_score = self.dealer_draw()
         player_WL = self.get_winner(dealer_score)
-        print(self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.bet_chip)
+        # print(self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.bet_chip)
         return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.bet_chip
