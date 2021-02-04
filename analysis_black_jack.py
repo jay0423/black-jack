@@ -41,7 +41,7 @@ class MakeDataFrame:
     def edit_df(self, df):
         #スプリットした回数を追加
         df["split"] = df["player_card"].map(len) - 1
-
+        print("スプリット列を追加")
         def func2(row):
             def func(xi):
                 ai = []
@@ -58,6 +58,7 @@ class MakeDataFrame:
             return np.dot(func(row["player_WL"]), row["bet_chip"])
         #獲得したコインの枚数を追加
         df["get_coin"] = df.apply(func2, axis=1)
+        print("get_coin列の追加")
         return df
 
     def main(self):
@@ -67,6 +68,7 @@ class MakeDataFrame:
                 if self.MAX_PLAY_COUNTS == self.a.play_counts:
                     self.a.play_counts = 0
             self.get_game()
+        print("全勝負完了")
         dicts = {
             "player_card": self.player_card,
             "dealer_card": self.dealer_card,
@@ -77,8 +79,30 @@ class MakeDataFrame:
             "play_counts": self.play_counts,
         }
         df = self.make_df(dicts)
+        print("DataFrameを作成")
         df = self.edit_df(df)
         return df
+
+
+class Analysis:
+
+    def __init__(self, df):
+        self.df = df
+    
+    def play_counts_win_percent(self, func=sum):
+        """
+        ディーラと連続で戦う場合に勝率が変化するのかを分析する．
+        play_counts（連続して何回目の勝負か）ごとに分けて，勝敗をみる．
+        play_countsごとに分け，get_coinを引数のfunctionで算出する．
+        デフォルトのfunctionはsum．
+        """
+        if func == "sum":
+            func = sum
+        elif func == "mean":
+            func = np.mean
+        return  self.df.groupby("play_counts")["get_coin"].apply(func)
+
+
 
 if __name__ == "__main__":
     a = MakeDataFrame(10000, 5, True, 10)
