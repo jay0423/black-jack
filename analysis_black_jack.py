@@ -134,13 +134,13 @@ class AnalysisDf:
             for i in range(len(cut_num_list)-1):
                 percentage.append(percentage[i] + (round(self.df["get_coin"][cut_num_list[i]:cut_num_list[i+1]].sum() / len(self.df), 5) * 100))
             percentage = list(map(lambda x: x+50, percentage))
+            print(percentage[-1])
             #描画
             if plot:
                 fig = plt.figure()# Figureを設定
                 ax = fig.add_subplot(111)# Axesを追加
                 ax.set_title("Transition of win rate.", fontsize = 16) # Axesのタイトルを設定
                 max_p = math.ceil(max(abs(max(percentage)-50), abs(min(percentage)-50))*100)/100
-                print(max_p)
                 ax.set_ylim(50-max_p - 0.1, 50+max_p + 0.1)
                 ax.plot(cut_num_list, percentage)
                 plt.show()
