@@ -1,11 +1,22 @@
 """
 black_jack.pyから，データを取得してデータフレームを作成する．
-self.GAME_TIME：ブラックジャックのプレイ回数
+self.GAME_TIME：ブラックジャックのプレイ回数．
+
+Get started
+    > import analysis_black_jack as abj
+    > a = abj.MakeDataFrame(GAME_TIME=1000000, DECK=5, RE_PLAY=False, MAX_PLAY_COUNTS=5)
+    > df = a.main()
+    after finished
+    > b = abj.AnalysisDf(df)
+    > _ = b.~~~
 """
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import math
 from tqdm import tqdm
+
 import black_jack as bj
 
 
@@ -68,7 +79,6 @@ class MakeDataFrame:
                 if self.MAX_PLAY_COUNTS == self.a.play_counts:
                     self.a.play_counts = 0
             self.get_game()
-        print("全勝負完了")
         dicts = {
             "player_card": self.player_card,
             "dealer_card": self.dealer_card,
@@ -84,11 +94,58 @@ class MakeDataFrame:
         return df
 
 
-class Analysis:
+class AnalysisDf:
+    """
+    MakeDataFrame().main()をもとに作られたDataFrameを用いて，データ分析を行う．
+    """
 
     def __init__(self, df):
         self.df = df
     
+    def win_percentage(self, how="cut", split=10, cut_num_list=[], plot=False):
+        """
+        勝率を返すメソッド．
+        引数howがデフォルトのallのとき，ブラックジャック全体の勝率を返す．
+        howがcutのとき，複数の要素にカットされたcut_num_listに従い，その要素時点のプレイ回数時の勝率を算出しlistで返す．
+        つまり，勝率が回数に応じてどのように移行するのかを見ることができる．
+        その際の出力はどこでカットされているかを示す，cut_num_listと，percentageを返す．
+        プレイ回数を等分してほしい場合は，cut_num_listに引数を渡さない．
+        また，等分数はsplitを与えれば指定できる．デフォルトは10分割となっている．
+        plot==Trueのとき，横軸にプレイ回数，縦軸にパーセンテージを出力．
+        exp) _,_ = a.win_percentage(split=1000, plot=True)
+        """
+        if how == "all":
+            percentage = round(self.df["get_coin"].sum() / len(self.df), 3) * 100 + 50
+            return percentage
+        elif how == "cut":
+            #dfのget_coin列をスプリット数に等分したcut_num_listを生成．
+            if cut_num_list == []: #split数にしたがって等分割
+                CUT_NUM = int(len(self.df)/split)
+                cut_num_list = [(i+1)*CUT_NUM for i in range(split)]
+                cut_num_list.insert(0, 0)
+            else:
+                if cut_num_list[0] != 0:
+                    cut_num_list.insert(0, 0)
+                #受け取ったcut_num_listの最後の要素がdfの長さと一致していない場合，後ろにdfの長さを追加．
+                if cut_num_list[-1] != len(self.df):
+                    cut_num_list.append(len(self.df))
+            #各プレイ回数における勝率を算出
+            percentage = [0]
+            for i in range(len(cut_num_list)-1):
+                percentage.append(percentage[i] + (round(self.df["get_coin"][cut_num_list[i]:cut_num_list[i+1]].sum() / len(self.df), 5) * 100))
+            percentage = list(map(lambda x: x+50, percentage))
+            #描画
+            if plot:
+                fig = plt.figure()# Figureを設定
+                ax = fig.add_subplot(111)# Axesを追加
+                ax.set_title("Transition of win rate.", fontsize = 16) # Axesのタイトルを設定
+                max_p = math.ceil(max(abs(max(percentage)-50), abs(min(percentage)-50))*100)/100
+                print(max_p)
+                ax.set_ylim(50-max_p - 0.1, 50+max_p + 0.1)
+                ax.plot(cut_num_list, percentage)
+                plt.show()
+            return cut_num_list, percentage
+
     def play_counts_win_percent(self, func=sum):
         """
         ディーラと連続で戦う場合に勝率が変化するのかを分析する．
