@@ -253,11 +253,6 @@ class MakeBlackJack:
         """
         ディーラーがカードを引く処理
         """
-        #プレイヤーのBUSTを数値化
-        player_score_B = self.player_score.copy()
-        for i, score in enumerate(self.player_score):
-            if score == 'BUST':
-                player_score_B[i] = 0
         #ディーラーがカードを引く
         while True:
             #ディーラーのスコア
@@ -268,12 +263,11 @@ class MakeBlackJack:
             if 'A' in str(self.dealer_card):
                 if 18 <= dealer_score + 10 <= 21:
                     break
-                elif 18 <= dealer_score <= 21:
+                elif dealer_score >= 17:
                     break
-                elif dealer_score >= 22:
-                    break
-                elif dealer_score + 10 == 17 and player_score_B[self.j_adj] <= 16:
-                    break
+                elif self.player_score[0] != 'BUST': #ソフトハンドで17の時，プレイヤーのスコアが17以上の時は引く．
+                    if dealer_score + 10 == 17 and self.player_score[0] <= 16:
+                        break
             else:
                 if dealer_score >= 17:
                     break
