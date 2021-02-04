@@ -115,12 +115,12 @@ class AnalysisDf:
         exp) _,_ = a.win_percentage(split=1000, plot=True)
         """
         if how == "all":
-            percentage = round(self.df["get_coin"].sum() / len(self.df), 3) * 100 + 50
+            percentage = round(self.df["get_coin"].sum() / len(self.df), 5) * 100 + 50
             return percentage
         elif how == "cut":
             #dfのget_coin列をスプリット数に等分したcut_num_listを生成．
+            CUT_NUM = int(len(self.df)/split)
             if cut_num_list == []: #split数にしたがって等分割
-                CUT_NUM = int(len(self.df)/split)
                 cut_num_list = [(i+1)*CUT_NUM for i in range(split)]
                 cut_num_list.insert(0, 0)
             else:
@@ -132,8 +132,8 @@ class AnalysisDf:
             #各プレイ回数における勝率を算出
             percentage = [0]
             for i in range(len(cut_num_list)-1):
-                percentage.append(percentage[i] + (round(self.df["get_coin"][cut_num_list[i]:cut_num_list[i+1]].sum() / len(self.df), 5) * 100))
-            percentage = list(map(lambda x: x+50, percentage))
+                percentage.append(round((percentage[i] + self.df["get_coin"][cut_num_list[i]:cut_num_list[i+1]].sum()) / cut_num_list[i+1], 5))
+            percentage = list(map(lambda x: x*100+50, percentage))
             print(percentage[-1])
             #描画
             if plot:
