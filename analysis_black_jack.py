@@ -140,8 +140,7 @@ class AnalysisDf:
                 fig = plt.figure()# Figureを設定
                 ax = fig.add_subplot(111)# Axesを追加
                 ax.set_title("Transition of win rate.", fontsize = 16) # Axesのタイトルを設定
-                max_p = math.ceil(max(abs(max(percentage)-50), abs(min(percentage)-50))*100)/100
-                ax.set_ylim(50-max_p - 0.1, 50+max_p + 0.1)
+                ax.set_ylim(50-0.3, 50+0.3)
                 ax.plot(cut_num_list, percentage)
                 plt.show()
             return cut_num_list, percentage
