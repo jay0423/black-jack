@@ -105,12 +105,12 @@ class MakeBlackJack:
 
     def get_dealer_card(self):
         #ディーラーがカードを引く
-        self.dealer_card = [self.card_list_index[0], self.card_list_index[2]]
+        self.dealer_card = [self.card_list_index[0], self.card_list_index[1]]
         del self.card_list_index[:2] #引いた分のカードを削除
 
     def get_player_card(self):
         #プレイヤーがカードを引く
-        self.player_card = [[self.card_list_index[0], self.card_list_index[2]]]
+        self.player_card = [[self.card_list_index[0], self.card_list_index[1]]]
         del self.card_list_index[:2] #引いた分のカードを削除
     
     def check_natural_black_jack(self):
@@ -209,7 +209,6 @@ class MakeBlackJack:
         self.player_card.insert(len(self.player_card), [self.player_card[self.j_adj][1]])
         self.player_card[self.j_adj].pop(1)
         self.player_score.append(0) #プレイヤーのスコアを分割
-        self.card_list_index.pop(0)
         #Aでスプリットした場合にダブルダウンを無くす
         if 'A' in self.player_card[self.j_adj][0]:
             self.change_doubledown()
