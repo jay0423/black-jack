@@ -17,6 +17,9 @@ import matplotlib.pyplot as plt
 import math
 from tqdm import tqdm
 
+import sys
+import os
+sys.path.append(os.path.abspath(".."))
 import black_jack as bj
 
 

@@ -66,7 +66,10 @@ class MakeBlackJack:
 
     def import_cards(self):
         #AからKのカードのリストをインポート
-        card_list = pd.read_csv('csv/playing_card.csv')
+        try:
+            card_list = pd.read_csv('../csv/playing_card.csv')
+        except:
+            card_list = pd.read_csv('csv/playing_card.csv')
         card_list.index = card_list.card_num
         card_list.drop('card_num', axis=1, inplace=True)
         for i in range(self.DECK):
@@ -76,7 +79,10 @@ class MakeBlackJack:
     
     def import_basic_strategy(self):
         #ベーシックストラテジーの表をcsvファイルからインポート
-        self.basic_strategy = pd.read_csv('csv/basic_strategy.csv')
+        try:
+            self.basic_strategy = pd.read_csv('../csv/basic_strategy.csv')
+        except:
+            self.basic_strategy = pd.read_csv('csv/basic_strategy.csv')
         self.basic_strategy.index = self.basic_strategy.PC
         self.basic_strategy.drop('PC', axis=1, inplace=True)
         self.basic_strategy_list = [list(self.basic_strategy.iloc[i]) for i in range(len(self.basic_strategy))]
