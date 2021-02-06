@@ -58,7 +58,7 @@ class MakeBlackJack:
     player_score = [0] #プレイヤーのスコア
     bet_chip = [1] #ベットするチップの枚数（ダブルダウンの時だけ2枚）
 
-    j_adj = 0
+    j_adj = 0 #スプリットした際の処理位置．j_adj回のスプリット．
 
     def __init__(self, DECK=1):
         self.DECK = DECK #使用するトランプのデッキ数
@@ -214,12 +214,18 @@ class MakeBlackJack:
         self.player_card.insert(len(self.player_card), [self.player_card[self.j_adj][1]])
         self.player_card[self.j_adj].pop(1)
         self.player_score.append(0) #プレイヤーのスコアを分割
-        #Aでスプリットした場合にダブルダウンを無くす
+        #Aでスプリットした際，全ての処理を終わらせる．
         if 'A' in self.player_card[self.j_adj][0]:
-            self.change_doubledown()
+            self.player_card[0].append(self.card_list_index[0])
+            self.player_card[1].append(self.card_list_index[1])
+            del self.card_list_index[:2]
+            #各要素に得点を付けるための処理．例外処理．機能を追加した際，後にバグの原因となる可能性がある．
+            self.make_player_score()
+            self.j_adj += 1
+            self.make_player_score()
 
     def player_draw(self):
-        #プレイヤ―がヒットし続けるまで処理を続ける．
+        #プレイヤ―がスタンドするまで処理を続ける．
         while True:
             self.make_player_score()
 
@@ -338,6 +344,9 @@ class MakeBlackJack:
                 break
             #プレイヤーがスプリットしていない場合
             elif len(self.player_card) == 1 and j != 0:
+                break
+            #Aでスプリットした場合
+            elif len(self.player_card)==2 and self.player_card[0][0][0] == "A":
                 break
             #スプリットしているときの位置調整の処理
             if len(self.player_card) >= 2:
