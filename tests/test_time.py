@@ -40,6 +40,8 @@ class MakeBlackJack:
 
     def __init__(self, DECK=1):
         self.DECK = DECK #使用するトランプのデッキ数
+        self.play_counts = 0 #プレイしている回数
+        
         ##time
         self.time_dict = {
             # "import_cards": 0,
@@ -262,9 +264,15 @@ class MakeBlackJack:
         self.player_card.insert(len(self.player_card), [self.player_card[self.j_adj][1]])
         self.player_card[self.j_adj].pop(1)
         self.player_score.append(0) #プレイヤーのスコアを分割
-        #Aでスプリットした場合にダブルダウンを無くす
+        #Aでスプリットした際，全ての処理を終わらせる．
         if 'A' in self.player_card[self.j_adj][0]:
-            self.change_doubledown()
+            self.player_card[0].append(self.card_list_index[0])
+            self.player_card[1].append(self.card_list_index[1])
+            del self.card_list_index[:2]
+            #各要素に得点を付けるための処理．例外処理．機能を追加した際，後にバグの原因となる可能性がある．
+            self.make_player_score()
+            self.j_adj += 1
+            self.make_player_score()
 
     def player_draw(self):
         #プレイヤ―がヒットし続けるまで処理を続ける．
@@ -344,11 +352,13 @@ class MakeBlackJack:
         for i, score in enumerate(self.player_score):
             if score == 'BUST':
                 player_WL.append('LOSE')
-            elif score == 21 and len(self.player_card[i]) == 2 and \
-                 dealer_score == 21 and len(self.dealer_card) == 2:
+            elif score == 21 and len(self.player_card[i]) == 2 and dealer_score == 21 and len(self.dealer_card) == 2:
                 player_WL.append('PUSH')
             elif score == 21 and len(self.player_card[i]) == 2:
-                player_WL.append('Black Jack')
+                if len(self.player_card) == 2 and self.player_card[0][0][0] == "A": #Aでスプリットした際はBlack Jackとならない．
+                    player_WL.append('WIN')
+                else:
+                    player_WL.append('Black Jack')
             elif dealer_score == 'BUST' and score != 'BUST':
                 player_WL.append('WIN')
             elif score == dealer_score:
@@ -368,10 +378,12 @@ class MakeBlackJack:
         self.player_card = [] #プレイヤーのカード
         self.player_score = [0] #プレイヤーのスコア
         self.basic_strategy_list = self.basic_strategy_original_list.copy()
-        self.card_list_index = self.card_list_index_original.copy()
 
-        
-        self.shuffle_card()
+        self.play_counts += 1
+        if self.play_counts != 1: #連続で対戦する場合はシャッフルしない．
+            self.card_list_index = self.card_list_index_original.copy()
+            self.shuffle_card()
+
         self.get_dealer_card()
         self.get_player_card()
         self.check_natural_black_jack()

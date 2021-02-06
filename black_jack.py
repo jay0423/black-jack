@@ -299,11 +299,13 @@ class MakeBlackJack:
         for i, score in enumerate(self.player_score):
             if score == 'BUST':
                 player_WL.append('LOSE')
-            elif score == 21 and len(self.player_card[i]) == 2 and \
-                 dealer_score == 21 and len(self.dealer_card) == 2:
+            elif score == 21 and len(self.player_card[i]) == 2 and dealer_score == 21 and len(self.dealer_card) == 2:
                 player_WL.append('PUSH')
             elif score == 21 and len(self.player_card[i]) == 2:
-                player_WL.append('Black Jack')
+                if len(self.player_card) == 2 and self.player_card[0][0][0] == "A": #Aでスプリットした際はBlack Jackとならない．
+                    player_WL.append('WIN')
+                else:
+                    player_WL.append('Black Jack')
             elif dealer_score == 'BUST' and score != 'BUST':
                 player_WL.append('WIN')
             elif score == dealer_score:
