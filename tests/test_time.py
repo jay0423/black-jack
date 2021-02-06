@@ -41,7 +41,7 @@ class MakeBlackJack:
     def __init__(self, DECK=1):
         self.DECK = DECK #使用するトランプのデッキ数
         self.play_counts = 0 #プレイしている回数
-        
+
         ##time
         self.time_dict = {
             # "import_cards": 0,
@@ -59,7 +59,8 @@ class MakeBlackJack:
             "get_P_action": 0,
             "get_player_score": 0,
             "dealer_draw": 0,
-            "get_winner": 0
+            "get_winner": 0,
+            "add_get_coin": 0,
         }
         self.num_time_dict = {
             # "import_cards": 0,
@@ -77,7 +78,8 @@ class MakeBlackJack:
             "get_P_action": 0,
             "get_player_score": 0,
             "dealer_draw": 0,
-            "get_winner": 0
+            "get_winner": 0,
+            "add_get_coin": 0,
         }
         self.times = 0
 
@@ -369,6 +371,19 @@ class MakeBlackJack:
                 player_WL.append('LOSE')
         return player_WL
 
+    @StopWatch
+    def add_get_coin(self, player_WL):
+        ai = []
+        for x, b in zip(player_WL, self.bet_chip):
+            if x == "WIN":
+                ai.append(b)
+            elif x == "LOSE":
+                ai.append(-1 * b)
+            elif x == "Black Jack":
+                ai.append(1.5 * b)
+            elif x == "PUSH":
+                ai.append(0)
+        return sum(ai)
 
     def main(self):
         # print("カードの枚数：{}".format(len(self.card_list_index)))
@@ -417,6 +432,9 @@ class MakeBlackJack:
         self.get_player_score()
         #ディーラーがカードを引く処理
         dealer_score = self.dealer_draw()
+        #勝敗の決定
         player_WL = self.get_winner(dealer_score)
-        # print(self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.bet_chip)
-        return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.bet_chip
+        #獲得したコインの枚数を追加
+        get_coin = self.add_get_coin(player_WL)
+
+        return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.bet_chip, get_coin

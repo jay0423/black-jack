@@ -38,9 +38,10 @@ class MakeDataFrame:
         self.player_WL = []
         self.bet_chip = []
         self.play_counts = []
+        self.get_coin = []
 
     def get_game(self):
-        (player_card, dealer_card, player_score, dealer_score, player_WL, bet_chip, play_counts) = self.a.main()
+        (player_card, dealer_card, player_score, dealer_score, player_WL, bet_chip, play_counts, get_coin) = self.a.main()
         self.player_card.append(player_card)
         self.dealer_card.append(dealer_card)
         self.player_score.append(player_score)
@@ -48,6 +49,7 @@ class MakeDataFrame:
         self.player_WL.append(player_WL)
         self.bet_chip.append(bet_chip)
         self.play_counts.append(play_counts)
+        self.get_coin.append(get_coin)
 
     def make_df(self, dicts):
         return pd.DataFrame(dicts)
@@ -55,24 +57,6 @@ class MakeDataFrame:
     def edit_df(self, df):
         #スプリットした回数を追加
         df["split"] = df["player_card"].map(len) - 1
-        # print("スプリット列を追加")
-        def func2(row):
-            def func(xi):
-                ai = []
-                for x in xi:
-                    if x == "WIN":
-                        ai.append(1)
-                    elif x == "LOSE":
-                        ai.append(-1)
-                    elif x == "Black Jack":
-                        ai.append(1.5)
-                    elif x == "PUSH":
-                        ai.append(0)
-                return ai
-            return np.dot(func(row["player_WL"]), row["bet_chip"])
-        #獲得したコインの枚数を追加
-        df["get_coin"] = df.apply(func2, axis=1)
-        # print("get_coin列の追加")
         return df
 
     def play_black_jack(self):
@@ -89,6 +73,7 @@ class MakeDataFrame:
             "player_WL": self.player_WL,
             "bet_chip": self.bet_chip,
             "play_counts": self.play_counts,
+            "get_coin": self.get_coin,
         }
         return self.make_df(dicts)
 
