@@ -146,9 +146,8 @@ class MakeBlackJack:
         j_adj = self.j_adj
         card_dict = self.card_dict
         #スプリット時の処理
-        if card_dict[player_card[j_adj][0]] == card_dict[player_card[j_adj][1]] \
-            and len(player_card[j_adj]) == 2 and player_card[j_adj][0][0] != 'A':
-            if str(player_card[j_adj]).count('A') == 2:
+        if card_dict[player_card[j_adj][0]] == card_dict[player_card[j_adj][1]] and len(player_card[j_adj]) == 2:
+            if len(player_card) == 1 and str(player_card[j_adj]).count('A') == 2: #Aのスプリットは一回しかできない．
                 PC = 'AA'
             else:
                 PC = str(card_dict[player_card[j_adj][0]]) + str(card_dict[player_card[j_adj][1]])
