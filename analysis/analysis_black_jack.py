@@ -25,19 +25,19 @@ import black_jack as bj
 
 class MakeDataFrame:
 
-    player_card = []
-    dealer_card = []
-    player_score = []
-    dealer_score = []
-    player_WL = []
-    bet_chip = []
-    play_counts = []
-
-    def __init__(self, GAME_TIME=100000, DECK=5, RE_PLAY=False, MAX_PLAY_COUNTS=5):
+    def __init__(self, GAME_TIME=100000, DECK=6, RE_PLAY=False, MAX_PLAY_COUNTS=5):
         self.a = bj.MakeBlackJack(DECK)
         self.GAME_TIME = GAME_TIME
         self.RE_PLAY = RE_PLAY
         self.MAX_PLAY_COUNTS = MAX_PLAY_COUNTS
+        #初期化
+        self.player_card = []
+        self.dealer_card = []
+        self.player_score = []
+        self.dealer_score = []
+        self.player_WL = []
+        self.bet_chip = []
+        self.play_counts = []
 
     def get_game(self):
         (player_card, dealer_card, player_score, dealer_score, player_WL, bet_chip, play_counts) = self.a.main()
@@ -55,7 +55,7 @@ class MakeDataFrame:
     def edit_df(self, df):
         #スプリットした回数を追加
         df["split"] = df["player_card"].map(len) - 1
-        print("スプリット列を追加")
+        # print("スプリット列を追加")
         def func2(row):
             def func(xi):
                 ai = []
@@ -72,11 +72,10 @@ class MakeDataFrame:
             return np.dot(func(row["player_WL"]), row["bet_chip"])
         #獲得したコインの枚数を追加
         df["get_coin"] = df.apply(func2, axis=1)
-        print("get_coin列の追加")
+        # print("get_coin列の追加")
         return df
 
-    def main(self):
-        self.a.setup()
+    def play_black_jack(self):
         for i in tqdm(range(self.GAME_TIME)):
             if self.RE_PLAY:
                 if self.MAX_PLAY_COUNTS == self.a.play_counts:
@@ -91,7 +90,11 @@ class MakeDataFrame:
             "bet_chip": self.bet_chip,
             "play_counts": self.play_counts,
         }
-        df = self.make_df(dicts)
+        return self.make_df(dicts)
+
+    def main(self):
+        self.a.setup()
+        df = self.play_black_jack()
         print("DataFrameを作成")
         df = self.edit_df(df)
         return df
@@ -165,7 +168,42 @@ class AnalysisDf:
         return  self.df.groupby("play_counts")["get_coin"].apply(func)
 
 
+class AnalysisAll:
+
+    def deck_analysis(self, deck_list=[1,2,4,6,8], GAME_TIME=1000000, plot=True):
+        """
+        Deck数の影響を調べる．
+        """
+        percentage_list = []
+        cut_num_list = [] # plot == 1のとき用
+        for deck in deck_list:
+            a = MakeDataFrame(GAME_TIME=GAME_TIME, RE_PLAY=False, DECK=deck)
+            print("\nDECK数：{}".format(deck))
+            df = a.main()
+            c, p = AnalysisDf(df).win_percentage(how="cut", split=100, plot=False)
+            cut_num_list.append(c)
+            percentage_list.append(p)
+        last_percentage_list = [p[-1] for p in percentage_list]
+        if plot:
+            #描画１
+            fig = plt.figure()# Figureを設定
+            ax = fig.add_subplot(111)# Axesを追加
+            ax.set_title("Changing deck affects win rate.", fontsize=16) # Axesのタイトルを設定
+            ax.plot(deck_list, last_percentage_list, marker=".")
+            #描画２
+            fig = plt.figure() # Figureを設定
+            ax2 = fig.add_subplot(111) # Axesを追加
+            ax2.set_title("Changing deck affects win rate.", fontsize=16) # Axesのタイトルを設定
+            for c, p, d in zip(cut_num_list, percentage_list, deck_list):
+                ax2.plot(c, p, label=d)
+            plt.legend(bbox_to_anchor=(1, 1), loc='best', borderaxespad=0, fontsize=8)
+            plt.show()
+            print(last_percentage_list)
+        else:
+            return last_percentage_list
+        
+
 
 if __name__ == "__main__":
-    a = MakeDataFrame(10000, 5, True, 10)
+    a = MakeDataFrame(10000, 6, True, 10)
     a.main()
