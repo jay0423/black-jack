@@ -28,8 +28,8 @@
 - numpy
 - matplotlib
 
-## Get Started
-データフレームを作成し，勝率確率の推移を見るモデル処理．
+## Sample code
+#### データフレームを作成し，勝率確率の推移を見るモデル処理．
 
 ```
 cd analysis
