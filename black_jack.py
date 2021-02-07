@@ -58,6 +58,9 @@ class MakeBlackJack:
     player_score = [0] #プレイヤーのスコア
     bet_chip = [1] #ベットするチップの枚数（ダブルダウンの時だけ2枚）
 
+    first_PC = "" #最初のプレイヤーの手札
+    first_DC = "" #最初のディーラーのオープン手札
+
     j_adj = 0 #スプリットした際の処理位置．j_adj回のスプリット．
 
     def __init__(self, DECK=1):
@@ -235,6 +238,9 @@ class MakeBlackJack:
             
             PC = self.decide_PC()
             DC = self.card_dict[self.dealer_card[1]]
+            if self.first_PC == "":
+                self.first_PC = str(PC)
+                self.first_DC = str(DC)
             #プレイヤーの行動を取得
             P_action = self.select_HDPS_from_basic_strategy(self.basic_strategy_index.index(str(PC)), self.basic_strategy_columns.index(str(DC)))
             
@@ -335,6 +341,8 @@ class MakeBlackJack:
         self.dealer_card = [] #ディーラーのカード
         self.player_card = [] #プレイヤーのカード
         self.player_score = [0] #プレイヤーのスコア
+        self.first_PC = ""
+        self.first_DC = ""
         self.basic_strategy_list = self.basic_strategy_original_list.copy()
 
         self.play_counts += 1
@@ -382,7 +390,7 @@ class MakeBlackJack:
         #獲得したコインの枚数を追加
         get_coin = self.add_get_coin(player_WL)
 
-        return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.play_counts, get_coin
+        return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.play_counts, get_coin, self.first_PC, self.first_DC
     
 if __name__ == "__main__":
     a = MakeBlackJack()

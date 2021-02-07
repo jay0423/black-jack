@@ -14,6 +14,7 @@ Get started
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 import math
 from tqdm import tqdm
 
@@ -39,9 +40,11 @@ class MakeDataFrame:
         self.bet_chip = []
         self.play_counts = []
         self.get_coin = []
+        self.first_PC = []
+        self.first_DC = []
 
     def get_game(self):
-        (player_card, dealer_card, player_score, dealer_score, player_WL, bet_chip, play_counts, get_coin) = self.a.main()
+        (player_card, dealer_card, player_score, dealer_score, player_WL, bet_chip, play_counts, get_coin, first_PC, first_DC) = self.a.main()
         self.player_card.append(player_card)
         self.dealer_card.append(dealer_card)
         self.player_score.append(player_score)
@@ -50,6 +53,8 @@ class MakeDataFrame:
         self.bet_chip.append(bet_chip)
         self.play_counts.append(play_counts)
         self.get_coin.append(get_coin)
+        self.first_PC.append(first_PC)
+        self.first_DC.append(first_DC)
 
     def make_df(self, dicts):
         return pd.DataFrame(dicts)
@@ -74,6 +79,8 @@ class MakeDataFrame:
             "bet_chip": self.bet_chip,
             "play_counts": self.play_counts,
             "get_coin": self.get_coin,
+            "first_PC": self.first_PC,
+            "first_DC": self.first_DC,
         }
         return self.make_df(dicts)
 
@@ -85,7 +92,7 @@ class MakeDataFrame:
         return df
 
 
-class AnalysisDf:
+class WinPercentage:
     """
     MakeDataFrame().main()をもとに作られたDataFrameを用いて，データ分析を行う．
     """
@@ -165,7 +172,28 @@ class AnalysisDf:
             ax.plot(df2.index, df2.values, marker=".")
             plt.show()
         return  self.df.groupby("play_counts")["get_coin"].apply(func)
+    
+    def basic_strategy_win_percentage(self, plot=True):
+        """
+        ベーシックストラテジーの各勝率を求める．
+        """
+        basic_strategy = pd.read_csv('../csv/basic_strategy.csv')
+        basic_strategy.index = basic_strategy.PC
+        basic_strategy.drop('PC', axis=1, inplace=True)
+        columns = list(basic_strategy.columns)
+        index = list(basic_strategy.index)
 
+        basic_strategy_sum = pd.crosstab(index=self.df["first_PC"], columns=self.df["first_DC"], values=self.df["get_coin"], aggfunc="sum").reindex(index=index, columns=columns)
+        basic_strategy_count = pd.crosstab(index=self.df["first_PC"], columns=self.df["first_DC"]).reindex(index=index, columns=columns).reindex(index=index, columns=columns)
+        basic_strategy_percentage = basic_strategy_sum / basic_strategy_count
+        basic_strategy_percentage = basic_strategy_percentage.applymap(lambda x: round(x+50, 2))
+
+        if plot:
+            fig, ax = plt.subplots(figsize=(7, 7))
+            fig = sns.heatmap(basic_strategy_percentage, cmap='Blues', annot=True, square=False, ax=ax)
+            ax.set_ylim(len(basic_strategy_percentage), 0)
+            plt.show()
+        return basic_strategy_percentage
 
 class AnalysisAll:
 
