@@ -330,7 +330,6 @@ class MakeBlackJack:
         return sum(ai)
 
     def main(self):
-        # print("カードの枚数：{}".format(len(self.card_list_index)))
         #初期化
         self.j_adj = 0 #player_cardの処理する場所
         self.dealer_card = [] #ディーラーのカード
@@ -339,10 +338,9 @@ class MakeBlackJack:
         self.basic_strategy_list = self.basic_strategy_original_list.copy()
 
         self.play_counts += 1
-        if self.play_counts != 1: #連続で対戦する場合はシャッフルしない．
+        if self.play_counts == 1: #連続で対戦する場合はシャッフルしない．
             self.card_list_index = self.card_list_index_original.copy()
             self.shuffle_card()
-
         self.get_dealer_card()
         self.get_player_card()
         self.check_natural_black_jack()

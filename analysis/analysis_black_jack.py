@@ -93,7 +93,7 @@ class AnalysisDf:
     def __init__(self, df):
         self.df = df
     
-    def win_percentage(self, how="cut", split=10, cut_num_list=[], plot=False):
+    def win_percentage(self, how="cut", split=10, cut_num_list=[], plot=True):
         """
         勝率を返すメソッド．
         引数howがデフォルトのallのとき，ブラックジャック全体の勝率を返す．
@@ -139,17 +139,31 @@ class AnalysisDf:
                 plt.show()
             return cut_num_list, percentage
 
-    def play_counts_win_percent(self, func=sum):
+    def play_counts_win_percent(self, func="rate", plot=True):
         """
         ディーラと連続で戦う場合に勝率が変化するのかを分析する．
         play_counts（連続して何回目の勝負か）ごとに分けて，勝敗をみる．
         play_countsごとに分け，get_coinを引数のfunctionで算出する．
         デフォルトのfunctionはsum．
         """
+        def func2(x):
+            return round(x.sum() / len(x), 5) * 100 + 50
+
         if func == "sum":
             func = sum
         elif func == "mean":
             func = np.mean
+        else:
+            func = func2
+
+        df2 = self.df.groupby("play_counts")["get_coin"].apply(func)
+        #描画
+        if plot:
+            fig = plt.figure()# Figureを設定
+            ax = fig.add_subplot(111)# Axesを追加
+            ax.set_title("Transition of win rate.", fontsize = 16) # Axesのタイトルを設定
+            ax.plot(df2.index, df2.values, marker=".")
+            plt.show()
         return  self.df.groupby("play_counts")["get_coin"].apply(func)
 
 
