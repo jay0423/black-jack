@@ -2,6 +2,9 @@
 ##### <div align="center">Simulate Black Jack based on "Basic strategy"</div>
 ##### <div align="center">Analyze dataframe made by Black Jack simulation.</div>
 ##### <div align="center">And show how to play perfect Black Jack.</div>
+<div align="center">
+<img src="./img/df.PNG">
+</div>
 
 ---
 ## Basic strategy
@@ -19,5 +22,22 @@
 - 指定した回数，対戦を行うことでより正確な分析を行うことができる．
 - 分析クラスを活用することができる．
 
-## Get Started
+## Software, Library
+- ipython
+- pandas
+- numpy
+- matplotlib
 
+## Get Started
+データフレームを作成し，勝率確率の推移を見るモデル処理．
+
+```
+cd analysis
+import analysis_black_jack as abj
+a = abj.MakeDataFrame(GAME_TIME=1000000, DECK=5, RE_PLAY=False, MAX_PLAY_COUNTS=5) #GAME_TIMEで対戦回数を指定できる．
+df = a.main()
+b = abj.AnalysisDf(df)
+b.win_percentage()
+```
+
+<img src="./img/Transition_of_win_rate_40000000times.png">
