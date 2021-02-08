@@ -81,5 +81,5 @@ I created a Jupyter notebook as a sample for data analysis.
 See the "ipynb/" directory.
 
 ## Author
-Name: Jumpei Kajimoto
+Name: Jumpei Kajimoto  
 Email: jay0423@i.softbank.jp
