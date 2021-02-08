@@ -214,7 +214,7 @@ class WinPercentage:
         if plot:
             if kind == "sum":
                 fig, ax = plt.subplots(figsize=(9, 9))
-                fig = sns.heatmap(basic_strategy_sum, center=8000, square=False, ax=ax, fmt=".0f")
+                fig = sns.heatmap(basic_strategy_sum, square=False, ax=ax, fmt=".0f")
                 ax.set_ylim(len(basic_strategy_sum), 0)
                 ax.set_xlabel("Dealer's open card")
                 ax.set_ylabel("Player's card")
@@ -223,7 +223,7 @@ class WinPercentage:
                 return basic_strategy_sum
             elif kind == "count":
                 fig, ax = plt.subplots(figsize=(9, 9))
-                fig = sns.heatmap(basic_strategy_count, center=20000, square=False, ax=ax, fmt=".0f")
+                fig = sns.heatmap(basic_strategy_count, square=False, ax=ax, fmt=".0f")
                 ax.set_ylim(len(basic_strategy_count), 0)
                 ax.set_xlabel("Dealer's open card")
                 ax.set_ylabel("Player's card")
