@@ -60,7 +60,7 @@ class MakeBlackJack:
 
     j_adj = 0 #スプリットした際の処理位置．j_adj回のスプリット．
 
-    def __init__(self, DECK=1):
+    def __init__(self, DECK=6):
         self.DECK = DECK #使用するトランプのデッキ数
         self.play_counts = 0 #プレイしている回数
         self.dealer_card = [] #ディーラーのカード
@@ -394,11 +394,11 @@ class MakeBlackJack:
 
 class MakeBlackJackCardCustomized(MakeBlackJack):
     """
-    プレイヤーのカードとディーラーのカードを入力値とし，始めに配布されるプレイヤーのカードを指定することができる．
+    プレイヤーのカードとディーラーのオープンカードを入力値とし，始めに配布されるプレイヤーのカードを指定することができる．
     これにより部分的に詳細なデータ分析を行うことができる．
     """
 
-    def main(self, dealer_card_first, player_card_first):
+    def main(self, dealer_open_card, player_card_first):
         #初期化
         self.j_adj = 0 #player_cardの処理する場所
         self.dealer_card = [] #ディーラーのカード
@@ -413,12 +413,15 @@ class MakeBlackJackCardCustomized(MakeBlackJack):
             self.card_list_index = self.card_list_index_original.copy()
             self.shuffle_card()
         
-        #ここでカードを指定している．
-        self.dealer_card = dealer_card_first
-        self.player_card = player_card_first
-        for d, p in zip(self.dealer_card, self.player_card):
-            self.card_list_index.remove(d)
-            self.card_list_index.remove(p)
+        #ディら―の配られるカードを作成．オープンカードは2枚目である．
+        self.card_list_index.remove(dealer_open_card) #カードの削除
+        self.dealer_card = [self.card_list_index[0]]
+        self.card_list_index.pop(0) #カードの削除
+        self.dealer_card.append(dealer_open_card)
+        #プレイヤーのカードを追加
+        self.player_card = [player_card_first]
+        self.card_list_index.remove(player_card_first[0]) #カードの削除
+        self.card_list_index.remove(player_card_first[1]) #カードの削除
         
         self.check_natural_black_jack()
 
