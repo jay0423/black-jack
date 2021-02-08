@@ -173,7 +173,7 @@ class WinPercentage:
             plt.show()
         return  self.df.groupby("play_counts")["get_coin"].apply(func)
     
-    def basic_strategy_win_percentage(self, plot=True, win_coin=True, prints=False):
+    def basic_strategy_win_percentage(self, plot=True, win_coin=True, prints=False, kind="percentage"):
         """
         ベーシックストラテジーの各勝率を求める．
         win_coinは，勝率の算出法を示しており，Trueのときは勝った枚数から独自のアルゴリズムで勝率を算出している．
@@ -212,14 +212,33 @@ class WinPercentage:
             print("\ncount")
             print(basic_strategy_count)
         if plot:
-            fig, ax = plt.subplots(figsize=(9, 9))
-            fig = sns.heatmap(basic_strategy_percentage, cmap='Blues', annot=True, square=False, ax=ax, fmt=".0f")
-            ax.set_ylim(len(basic_strategy_percentage), 0)
-            ax.set_xlabel("Dealer's open card")
-            ax.set_ylabel("Player's card")
-            ax.set_title("Win rate of 'Basic strategy'")
-            plt.show()
-        return basic_strategy_percentage
+            if kind == "sum":
+                fig, ax = plt.subplots(figsize=(9, 9))
+                fig = sns.heatmap(basic_strategy_sum, center=8000, square=False, ax=ax, fmt=".0f")
+                ax.set_ylim(len(basic_strategy_sum), 0)
+                ax.set_xlabel("Dealer's open card")
+                ax.set_ylabel("Player's card")
+                ax.set_title("sum of get win coin of 'Basic strategy'")
+                plt.show()
+                return basic_strategy_sum
+            elif kind == "count":
+                fig, ax = plt.subplots(figsize=(9, 9))
+                fig = sns.heatmap(basic_strategy_count, center=20000, square=False, ax=ax, fmt=".0f")
+                ax.set_ylim(len(basic_strategy_count), 0)
+                ax.set_xlabel("Dealer's open card")
+                ax.set_ylabel("Player's card")
+                ax.set_title("count of 'Basic strategy'")
+                plt.show()
+                return basic_strategy_count
+            else:
+                fig, ax = plt.subplots(figsize=(9, 9))
+                fig = sns.heatmap(basic_strategy_percentage, cmap='Blues', annot=True, square=False, ax=ax, fmt=".0f")
+                ax.set_ylim(len(basic_strategy_percentage), 0)
+                ax.set_xlabel("Dealer's open card")
+                ax.set_ylabel("Player's card")
+                ax.set_title("Win rate of 'Basic strategy'")
+                plt.show()
+                return basic_strategy_percentage
 
 
 class AnalysisAll:
