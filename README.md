@@ -1,10 +1,7 @@
-# <div align="center">black-jack</div>
-##### <div align="center">Simulate Black Jack based on "Basic strategy"</div>
-##### <div align="center">Analyze dataframe made by Black Jack simulation.</div>
-##### <div align="center">And show how to play perfect Black Jack.</div>
-<div align="center">
-<img src="./img/df.PNG">
-</div>
+# black-jack
+Simulate Black Jack based on "Basic strategy"  
+Analyze dataframe made by Black Jack simulation.  
+And show how to play perfect Black Jack.
 
 ## Basic strategy
 A basic strategy is a cheat sheet for player action selection.  
@@ -39,6 +36,10 @@ a = abj.MakeDataFrame(GAME_TIME=1000000, DECK=6, RE_PLAY=False)
 df = a.main()
 ```
 
+<div align="center">
+<img src="./img/df.PNG">
+</div>
+
 The columns of df are as follows.
 
 |  Columns  |  Detail |
@@ -54,7 +55,6 @@ The columns of df are as follows.
 |  first_PC  |  Player's hand. Obtained from the basic strategy column.  |
 |  first_DC  |  Dealer's open card. Obtained from the basic strategy index.  |
 |  split  |  The number of splits.  |
-
 
 #### Visualize the transition of winning percentage probability.
 
