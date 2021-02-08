@@ -173,9 +173,11 @@ class WinPercentage:
             plt.show()
         return  self.df.groupby("play_counts")["get_coin"].apply(func)
     
-    def basic_strategy_win_percentage(self, plot=True):
+    def basic_strategy_win_percentage(self, plot=True, win_coin=True, prints=False):
         """
         ベーシックストラテジーの各勝率を求める．
+        win_coinは，勝率の算出法を示しており，Trueのときは勝った枚数から独自のアルゴリズムで勝率を算出している．
+        Falseの場合は，単純に'勝利した回数/勝負した回数'で算出している．
         """
         basic_strategy = pd.read_csv('../csv/basic_strategy.csv')
         basic_strategy.index = basic_strategy.PC
@@ -183,17 +185,39 @@ class WinPercentage:
         columns = list(basic_strategy.columns)
         index = list(basic_strategy.index)
 
-        basic_strategy_sum = pd.crosstab(index=self.df["first_PC"], columns=self.df["first_DC"], values=self.df["get_coin"], aggfunc="sum").reindex(index=index, columns=columns)
-        basic_strategy_count = pd.crosstab(index=self.df["first_PC"], columns=self.df["first_DC"]).reindex(index=index, columns=columns).reindex(index=index, columns=columns)
-        basic_strategy_percentage = basic_strategy_sum / basic_strategy_count
-        basic_strategy_percentage = basic_strategy_percentage.applymap(lambda x: round(x+50, 2))
-
+        if win_coin:
+            df = self.df
+            df["split2"] = df["split"].map(lambda x: x+1)
+            basic_strategy_sum = pd.crosstab(index=df["first_PC"], columns=df["first_DC"], values=df["get_coin"], aggfunc="sum").reindex(index=index, columns=columns)
+            basic_strategy_count = pd.crosstab(index=df["first_PC"], columns=df["first_DC"]).reindex(index=index, columns=columns)
+            basic_strategy_percentage = basic_strategy_sum / basic_strategy_count
+            basic_strategy_percentage = basic_strategy_percentage.applymap(lambda x: round(x*100+50, 2))
+            basic_strategy_percentage = basic_strategy_percentage.iloc[1:18]
+        else:
+            df = self.df
+            df["split2"] = df["split"].map(lambda x: x+1)
+            def func(x):
+                if x > 0:
+                    return 1
+                else:
+                    return 0
+            df["W_L"] = df["get_coin"].map(func)
+            basic_strategy_sum = pd.crosstab(index=df["first_PC"], columns=df["first_DC"], values=df["W_L"], aggfunc="sum").reindex(index=index, columns=columns)
+            basic_strategy_count = pd.crosstab(index=df["first_PC"], columns=df["first_DC"], values=df["split2"], aggfunc="sum").reindex(index=index, columns=columns)
+            basic_strategy_percentage = basic_strategy_sum / basic_strategy_count
+            basic_strategy_percentage = basic_strategy_percentage.applymap(lambda x: round(x*100, 2))
+        if prints:
+            print("sum")
+            print(basic_strategy_sum)
+            print("\ncount")
+            print(basic_strategy_count)
         if plot:
-            fig, ax = plt.subplots(figsize=(7, 7))
-            fig = sns.heatmap(basic_strategy_percentage, cmap='Blues', annot=True, square=False, ax=ax)
+            fig, ax = plt.subplots(figsize=(9, 9))
+            fig = sns.heatmap(basic_strategy_percentage, cmap='Blues', annot=True, square=False, ax=ax, fmt=".1f")
             ax.set_ylim(len(basic_strategy_percentage), 0)
             plt.show()
         return basic_strategy_percentage
+
 
 class AnalysisAll:
 
