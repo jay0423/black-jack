@@ -213,8 +213,11 @@ class WinPercentage:
             print(basic_strategy_count)
         if plot:
             fig, ax = plt.subplots(figsize=(9, 9))
-            fig = sns.heatmap(basic_strategy_percentage, cmap='Blues', annot=True, square=False, ax=ax, fmt=".1f")
+            fig = sns.heatmap(basic_strategy_percentage, cmap='Blues', annot=True, square=False, ax=ax, fmt=".0f")
             ax.set_ylim(len(basic_strategy_percentage), 0)
+            ax.set_xlabel("Dealer's open card")
+            ax.set_ylabel("Player's card")
+            ax.set_title("Win rate of 'Basic strategy'")
             plt.show()
         return basic_strategy_percentage
 
