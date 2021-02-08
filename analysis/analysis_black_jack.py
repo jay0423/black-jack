@@ -25,6 +25,9 @@ import black_jack as bj
 
 
 class MakeDataFrame:
+    """
+    指定された回数だけブラックジャックをプレイし，DataFrameを作成する．
+    """
 
     def __init__(self, GAME_TIME=100000, DECK=6, RE_PLAY=False, MAX_PLAY_COUNTS=5):
         self.a = bj.MakeBlackJack(DECK)
@@ -95,6 +98,7 @@ class MakeDataFrame:
 class WinPercentage:
     """
     MakeDataFrame().main()をもとに作られたDataFrameを用いて，データ分析を行う．
+    主に勝率を算出する．
     """
 
     def __init__(self, df):
@@ -242,6 +246,9 @@ class WinPercentage:
 
 
 class AnalysisAll:
+    """
+    ブラックジャックの設定を変更させてDataFrameを作成し，データ分析を行うクラス
+    """
 
     def deck_analysis(self, deck_list=[1,2,4,6,8], GAME_TIME=1000000, plot=True):
         """
@@ -275,7 +282,6 @@ class AnalysisAll:
         else:
             return last_percentage_list
         
-
 
 if __name__ == "__main__":
     a = MakeDataFrame(10000, 6, True, 10)
