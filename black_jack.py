@@ -52,9 +52,6 @@ class MakeBlackJack:
     basic_strategy_HDP_S  = []
     basic_strategy_D_H  = []
 
-    dealer_card = [] #ディーラーのカード
-    player_card = [] #プレイヤーのカード
-
     player_score = [0] #プレイヤーのスコア
     bet_chip = [1] #ベットするチップの枚数（ダブルダウンの時だけ2枚）
 
@@ -66,6 +63,8 @@ class MakeBlackJack:
     def __init__(self, DECK=1):
         self.DECK = DECK #使用するトランプのデッキ数
         self.play_counts = 0 #プレイしている回数
+        self.dealer_card = [] #ディーラーのカード
+        self.player_card = [] #プレイヤーのカード
 
     def import_cards(self):
         #AからKのカードのリストをインポート
@@ -391,7 +390,79 @@ class MakeBlackJack:
         get_coin = self.add_get_coin(player_WL)
 
         return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.play_counts, get_coin, self.first_PC, self.first_DC
-    
+
+
+class MakeBlackJackCardCustomized(MakeBlackJack):
+    """
+    プレイヤーのカードとディーラーのカードを入力値とし，始めに配布されるプレイヤーのカードを指定することができる．
+    これにより部分的に詳細なデータ分析を行うことができる．
+    """
+
+    def main(self, dealer_card_first, player_card_first):
+        #初期化
+        self.j_adj = 0 #player_cardの処理する場所
+        self.dealer_card = [] #ディーラーのカード
+        self.player_card = [] #プレイヤーのカード
+        self.player_score = [0] #プレイヤーのスコア
+        self.first_PC = ""
+        self.first_DC = ""
+        self.basic_strategy_list = self.basic_strategy_original_list.copy()
+
+        self.play_counts += 1
+        if self.play_counts == 1: #連続で対戦する場合はシャッフルしない．
+            self.card_list_index = self.card_list_index_original.copy()
+            self.shuffle_card()
+        
+        #ここでカードを指定している．
+        self.dealer_card = dealer_card_first
+        self.player_card = player_card_first
+        for d, p in zip(self.dealer_card, self.player_card):
+            self.card_list_index.remove(d)
+            self.card_list_index.remove(p)
+        
+        self.check_natural_black_jack()
+
+        #掛け金の設定
+        self.bet_chip = [1]
+        #スプリットした際の繰り返し
+        j = 0
+        while True:
+            #勝負が終わった際の処理
+            #プレイヤーがスプリットしている際
+            if len(self.player_card) >= 2 and len(self.player_card[-1]) != 1:
+                break
+            #プレイヤーがスプリットしていない場合
+            elif len(self.player_card) == 1 and j != 0:
+                break
+            #Aでスプリットした場合
+            elif len(self.player_card)==2 and self.player_card[0][0][0] == "A":
+                break
+            #スプリットしているときの位置調整の処理
+            if len(self.player_card) >= 2:
+                for i, card in enumerate(self.player_card):
+                    if len(card) == 1:
+                        self.j_adj = i
+                        break
+                self.player_card[self.j_adj].append(self.card_list_index[0])
+                self.card_list_index.pop(0)
+            
+            #プレイヤーがカードを引く処理
+            self.player_draw()
+            j += 1
+
+        #プレイヤーのスコアを算出
+        self.get_player_score()
+        #ディーラーがカードを引く処理
+        dealer_score = self.dealer_draw()
+        #勝敗の決定
+        player_WL = self.get_winner(dealer_score)
+        #獲得したコインの枚数を追加
+        get_coin = self.add_get_coin(player_WL)
+
+        return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.play_counts, get_coin, self.first_PC, self.first_DC
+
+
+
 if __name__ == "__main__":
     a = MakeBlackJack()
     a.setup()
