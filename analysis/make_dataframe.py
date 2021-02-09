@@ -121,12 +121,15 @@ class MakeDataFrameCardCustomized(MakeDataFrame):
         return dealer_open_card
     
     def sum_card_two(self, sum_n):
-        if sum_n >= 12:
-            c1 = np.random.randint(21-sum_n) + sum_n - 10
-            c2 = sum_n - c1
-        else:
-            c1 = np.random.randint(sum_n - 3) + 2
-            c2 = sum_n - c1
+        while True:
+            if sum_n >= 12:
+                c1 = np.random.randint(21-sum_n) + sum_n - 10
+                c2 = sum_n - c1
+            else:
+                c1 = np.random.randint(sum_n - 3) + 2
+                c2 = sum_n - c1
+            if c1 != c2:
+                break
         return str(c1), str(c2)
 
     def get_player_card_first(self, PC_i):
@@ -135,7 +138,7 @@ class MakeDataFrameCardCustomized(MakeDataFrame):
         """
         PC = self.index[PC_i]
         if PC == ":8":
-            PC2 = np.random.choice([4,5,6,7,8])
+            PC2 = np.random.choice([5,6,7,8])
             c1, c2 = self.sum_card_two(PC2)
             player_card_first = [c1+"♠", c2+"♥"]
         elif PC == "17:":
@@ -165,8 +168,8 @@ class MakeDataFrameCardCustomized(MakeDataFrame):
         self.first_DC.append(first_DC)
 
     def play_black_jack(self):
-        for i in range(self.GAME_TIME):
-            for j in tqdm(range(10)):
+        for i in tqdm(range(self.GAME_TIME)):
+            for j in range(10):
                 self.dealer_open_card = self.get_dealer_open_card(j)
                 for k in range(29):
                     self.player_card_first = self.get_player_card_first(k)
