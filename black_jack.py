@@ -60,8 +60,9 @@ class MakeBlackJack:
 
     j_adj = 0 #スプリットした際の処理位置．j_adj回のスプリット．
 
-    def __init__(self, DECK=6):
+    def __init__(self, DECK=6, RESET=False):
         self.DECK = DECK #使用するトランプのデッキ数
+        self.RESET = RESET
         self.play_counts = 0 #プレイしている回数
         self.dealer_card = [] #ディーラーのカード
         self.player_card = [] #プレイヤーのカード
@@ -345,9 +346,14 @@ class MakeBlackJack:
         self.basic_strategy_list = self.basic_strategy_original_list.copy()
 
         self.play_counts += 1
-        if self.play_counts == 1: #連続で対戦する場合はシャッフルしない．
+        if self.RESET:
+            if self.play_counts == 1: #連続で対戦する場合はシャッフルしない．
+                self.card_list_index = self.card_list_index_original.copy()
+                self.shuffle_card()
+        else:
             self.card_list_index = self.card_list_index_original.copy()
             self.shuffle_card()
+
         self.get_dealer_card()
         self.get_player_card()
         self.check_natural_black_jack()
@@ -409,10 +415,14 @@ class MakeBlackJackCardCustomized(MakeBlackJack):
         self.basic_strategy_list = self.basic_strategy_original_list.copy()
 
         self.play_counts += 1
-        if self.play_counts == 1: #連続で対戦する場合はシャッフルしない．
+        if self.RESET:
+            if self.play_counts == 1: #連続で対戦する場合はシャッフルしない．
+                self.card_list_index = self.card_list_index_original.copy()
+                self.shuffle_card()
+        else:
             self.card_list_index = self.card_list_index_original.copy()
             self.shuffle_card()
-        
+
         #ディら―の配られるカードを作成．オープンカードは2枚目である．
         self.card_list_index.remove(dealer_open_card) #カードの削除
         self.dealer_card = [self.card_list_index[0]]

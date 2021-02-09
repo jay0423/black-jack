@@ -4,7 +4,7 @@ self.GAME_TIME：ブラックジャックのプレイ回数．
 
 Get started
     > import analysis_black_jack as abj
-    > a = abj.MakeDataFrame(GAME_TIME=1000000, DECK=5, RE_PLAY=False, MAX_PLAY_COUNTS=5)
+    > a = abj.MakeDataFrame(GAME_TIME=1000000, DECK=5, RESET=False, MAX_PLAY_COUNTS=5)
     > df = a.main()
     after finished
     > b = abj.AnalysisDf(df)
@@ -25,11 +25,11 @@ class MakeDataFrame:
     指定された回数だけブラックジャックをプレイし，DataFrameを作成する．
     """
 
-    def __init__(self, GAME_TIME=100000, DECK=6, RE_PLAY=False, MAX_PLAY_COUNTS=5):
+    def __init__(self, GAME_TIME=100000, DECK=6, RESET=False, MAX_PLAY_COUNTS=5):
         self.DECK = DECK
-        self.a = bj.MakeBlackJack(DECK)
+        self.a = bj.MakeBlackJack(DECK, RESET=RESET)
         self.GAME_TIME = GAME_TIME
-        self.RE_PLAY = RE_PLAY
+        self.RESET = RESET
         self.MAX_PLAY_COUNTS = MAX_PLAY_COUNTS
         #初期化
         self.player_card = []
@@ -66,7 +66,7 @@ class MakeDataFrame:
 
     def play_black_jack(self):
         for i in tqdm(range(self.GAME_TIME)):
-            if self.RE_PLAY:
+            if self.RESET:
                 if self.MAX_PLAY_COUNTS == self.a.play_counts:
                     self.a.play_counts = 0
             self.get_game()
@@ -140,14 +140,12 @@ class MakeDataFrameCardCustomized(MakeDataFrame):
             player_card_first = [c1+"♠", c2+"♥"]
         elif PC == "17:":
             player_card_first = ["K♠", "7♠"]
-        elif PC[0] == "A" and PC[1] != "A": #"A~"
+        elif PC[0] == "A" and PC[-1] != "A": #"A~"
             player_card_first = ["A♠", PC[1:]+"♠"]
-        elif PC[0] == PC[-1] and PC[0] != "1" and PC != "9": #スプリット（11を見分けている，9のバグ回避）
+        elif PC[0] == PC[-1] and PC != "11" and PC != "9": #スプリット（11を見分けている，9のバグ回避）
             player_card_first = [PC[0]+"♠", PC[0]+"♥"]
         elif PC == "1010":
             player_card_first = ["10♠", "J♠"]
-        elif PC == "AA":
-            player_card_first = ["A♠", "A♥"]
         else: #数字単体
             c1, c2 = self.sum_card_two(int(PC))
             player_card_first = [c1+"♠", c2+"♥"]
@@ -167,12 +165,12 @@ class MakeDataFrameCardCustomized(MakeDataFrame):
         self.first_DC.append(first_DC)
 
     def play_black_jack(self):
-        for j in tqdm(range(10)):
-            self.dealer_open_card = self.get_dealer_open_card(j)
-            for k in range(29):
-                self.player_card_first = self.get_player_card_first(k)
-                for i in range(self.GAME_TIME):
-                    if self.RE_PLAY:
+        for i in range(self.GAME_TIME):
+            for j in tqdm(range(10)):
+                self.dealer_open_card = self.get_dealer_open_card(j)
+                for k in range(29):
+                    self.player_card_first = self.get_player_card_first(k)
+                    if self.RESET:
                         if self.MAX_PLAY_COUNTS == self.a.play_counts:
                             self.a.play_counts = 0
                     self.get_game()
