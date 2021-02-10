@@ -7,6 +7,10 @@ And show how to play perfect Black Jack.
 A basic strategy is a cheat sheet for player action selection.  
 The player acts by comparing his hand with the face-up card of the dealer. You can generally narrow down the combination of your hand and the face-up dealer's hand to 290 ways. The basic strategy provides the player's best action from the expected value in each pattern.  
 
+<div align="center">
+<img src="./img/basic_strategy.PNG" width=300>
+</div>
+
 ## Details
 First of all, Blackjack has no psychological warfare elements and is completely mathematical and probabilistic.  
 Hijacking the basic strategy and playing mechanically is the most expected value. In addition, the dealer does not have his own intention according to the rules and acts mechanically. Therefore, it is possible to completely reproduce blackjack using a basic strategy by computer simulation.  
@@ -40,7 +44,7 @@ df = a.main()
 <img src="./img/df.PNG">
 </div>
 
-The columns of df are as follows.
+#### The columns of df are as follows.
 
 |  Columns  |  Detail |
 | ---- | ---- |
