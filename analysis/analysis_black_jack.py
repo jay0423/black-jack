@@ -96,11 +96,12 @@ class WinPercentage:
             plt.show()
         return  self.df.groupby("play_counts")["get_coin"].apply(func)
     
-    def basic_strategy_win_percentage(self, plot=True, how="coin", prints=False):
+    def basic_strategy_win_percentage(self, plot=True, how="coin", prints=False, split_count=True):
         """
         ベーシックストラテジーの各勝率を求める．
         howは，勝率の算出法を示しており，'coin'のときは勝ったコイン枚数から勝率を算出している．
         'count'の場合は，単純に'勝利した回数/勝負した回数'で算出している．
+        split_countは，howが'count'のとき，分母にスプリットで増えた勝負数を加算するかを指定することができる．
         """
         basic_strategy = pd.read_csv('../csv/basic_strategy.csv')
         basic_strategy.index = basic_strategy.PC
@@ -126,7 +127,6 @@ class WinPercentage:
         elif how == "count":
             # 単純に勝負にかつ確率を算出．引き分けが含まれない分勝率は低くなる傾向にある．
             df = self.df
-            df["split2"] = df["split"].map(lambda x: x+1)
             def func(x):
                 if x > 0:
                     return 1
@@ -134,7 +134,13 @@ class WinPercentage:
                     return 0
             df["W_L"] = df["get_coin"].map(func)
             basic_strategy_sum = pd.crosstab(index=df["first_PC"], columns=df["first_DC"], values=df["W_L"], aggfunc="sum").reindex(index=index, columns=columns)
-            basic_strategy_count = pd.crosstab(index=df["first_PC"], columns=df["first_DC"], values=df["split2"], aggfunc="sum").reindex(index=index, columns=columns)
+            if split_count:
+                #分母にスプリットして増加した勝負回数を増やす．→　勝率は下がる．スプリットしたものを分けて一グループあたりの勝率がわかる．
+                df["split2"] = df["split"].map(lambda x: x+1)
+                basic_strategy_count = pd.crosstab(index=df["first_PC"], columns=df["first_DC"], values=df["split2"], aggfunc="sum").reindex(index=index, columns=columns)
+            else:
+                #初手でスプリットの手になったときの勝率を算出する．
+                basic_strategy_count = pd.crosstab(index=df["first_PC"], columns=df["first_DC"], values=df["split"], aggfunc="count").reindex(index=index, columns=columns)
             basic_strategy_percentage = basic_strategy_sum / basic_strategy_count
             basic_strategy_percentage = basic_strategy_percentage.applymap(lambda x: round(x*100, 2))
             if prints:
@@ -151,9 +157,12 @@ class WinPercentage:
             ax.set_xlabel("Dealer's open card")
             ax.set_ylabel("Player's card")
             if how == "coin":
-                ax.set_title("Win rate of 'Basic strategy' calculated on coin. (win_coin / (win_coin + lose_coin))")
+                ax.set_title("Win rate of 'Basic strategy' calculated on coin. \n(win_coin / (win_coin + lose_coin))")
             elif how == "count":
-                ax.set_title("Win rate of 'Basic strategy' calculated on win count. (time_of_win / play_count)")
+                if split_count:
+                    ax.set_title("Win rate of 'Basic strategy' calculated on win count.\nInclude the number of splits.(time_of_win / play_count)")
+                else:
+                    ax.set_title("Win rate of 'Basic strategy' calculated on win count.\nDoes not include the number of splits.(time_of_win / play_count)")
             plt.show()
             return basic_strategy_percentage
 
