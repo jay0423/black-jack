@@ -189,7 +189,7 @@ class AnalysisAll:
             a = MakeDataFrame(GAME_TIME=GAME_TIME, RE_PLAY=False, DECK=deck)
             print("\nDECK数：{}".format(deck))
             df = a.main()
-            c, p = AnalysisDf(df).win_percentage(how="cut", split=100, plot=False)
+            c, p = WinPercentage(df).win_percentage(how="cut", split=300, plot=False)
             cut_num_list.append(c)
             percentage_list.append(p)
         last_percentage_list = [p[-1] for p in percentage_list]
