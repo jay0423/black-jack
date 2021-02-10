@@ -69,7 +69,7 @@ class WinPercentage:
                 plt.show()
             return cut_num_list, percentage
 
-    def play_counts_win_percent(self, func="rate", plot=True):
+    def play_count_win_percentage(self, func="rate", plot=True):
         """
         ディーラと連続で戦う場合に勝率が変化するのかを分析する．
         play_counts（連続して何回目の勝負か）ごとに分けて，勝敗をみる．
@@ -77,7 +77,9 @@ class WinPercentage:
         デフォルトのfunctionはsum．
         """
         def func2(x):
-            return round(x.sum() / len(x), 5) * 100 + 50
+            p = x[x > 0].sum()
+            n = x[x < 0].sum()
+            return round((p / (p - n)) * 100, 5)
 
         if func == "sum":
             func = sum
@@ -91,7 +93,12 @@ class WinPercentage:
         if plot:
             fig = plt.figure()# Figureを設定
             ax = fig.add_subplot(111)# Axesを追加
-            ax.set_title("Transition of win rate.", fontsize = 16) # Axesのタイトルを設定
+            if func == sum:
+                ax.set_title("Transition of get coin.", fontsize = 16) # Axesのタイトルを設定
+            if func == np.mean:
+                ax.set_title("Transition of get coin average.", fontsize = 16) # Axesのタイトルを設定
+            else:
+                ax.set_title("Transition of win rate.", fontsize = 16) # Axesのタイトルを設定
             ax.plot(df2.index, df2.values, marker=".")
             plt.show()
         return  self.df.groupby("play_counts")["get_coin"].apply(func)
