@@ -96,11 +96,11 @@ class WinPercentage:
             plt.show()
         return  self.df.groupby("play_counts")["get_coin"].apply(func)
     
-    def basic_strategy_win_percentage(self, plot=True, how="coin", prints=False, kind="percentage"):
+    def basic_strategy_win_percentage(self, plot=True, how="coin", prints=False):
         """
         ベーシックストラテジーの各勝率を求める．
-        win_coinは，勝率の算出法を示しており，Trueのときは勝った枚数から独自のアルゴリズムで勝率を算出している．
-        Falseの場合は，単純に'勝利した回数/勝負した回数'で算出している．
+        howは，勝率の算出法を示しており，'coin'のときは勝ったコイン枚数から勝率を算出している．
+        'count'の場合は，単純に'勝利した回数/勝負した回数'で算出している．
         """
         basic_strategy = pd.read_csv('../csv/basic_strategy.csv')
         basic_strategy.index = basic_strategy.PC
@@ -123,7 +123,7 @@ class WinPercentage:
                 print(basic_strategy_p)
                 print("\nlose_coin")
                 print(basic_strategy_n)
-        else:
+        elif how == "count":
             # 単純に勝負にかつ確率を算出．引き分けが含まれない分勝率は低くなる傾向にある．
             df = self.df
             df["split2"] = df["split"].map(lambda x: x+1)
@@ -145,33 +145,17 @@ class WinPercentage:
                 print(basic_strategy_count)
         if plot:
         #描画
-            if kind == "sum":
-                fig, ax = plt.subplots(figsize=(9, 9))
-                fig = sns.heatmap(basic_strategy_sum, square=False, ax=ax, fmt=".0f")
-                ax.set_ylim(len(basic_strategy_sum), 0)
-                ax.set_xlabel("Dealer's open card")
-                ax.set_ylabel("Player's card")
-                ax.set_title("sum of get win coin of 'Basic strategy'")
-                plt.show()
-                return basic_strategy_sum
-            elif kind == "count":
-                fig, ax = plt.subplots(figsize=(9, 9))
-                fig = sns.heatmap(basic_strategy_count, square=False, ax=ax, fmt=".0f")
-                ax.set_ylim(len(basic_strategy_count), 0)
-                ax.set_xlabel("Dealer's open card")
-                ax.set_ylabel("Player's card")
-                ax.set_title("count of 'Basic strategy'")
-                plt.show()
-                return basic_strategy_count
-            else:
-                fig, ax = plt.subplots(figsize=(9, 9))
-                fig = sns.heatmap(basic_strategy_percentage, cmap='Blues', annot=True, square=False, ax=ax, fmt=".0f")
-                ax.set_ylim(len(basic_strategy_percentage), 0)
-                ax.set_xlabel("Dealer's open card")
-                ax.set_ylabel("Player's card")
-                ax.set_title("Win rate of 'Basic strategy'")
-                plt.show()
-                return basic_strategy_percentage
+            fig, ax = plt.subplots(figsize=(9, 9))
+            fig = sns.heatmap(basic_strategy_percentage, cmap='Blues', annot=True, square=False, ax=ax, fmt=".0f")
+            ax.set_ylim(len(basic_strategy_percentage), 0)
+            ax.set_xlabel("Dealer's open card")
+            ax.set_ylabel("Player's card")
+            if how == "coin":
+                ax.set_title("Win rate of 'Basic strategy' calculated on coin. (win_coin / (win_coin + lose_coin))")
+            elif how == "count":
+                ax.set_title("Win rate of 'Basic strategy' calculated on win count. (time_of_win / play_count)")
+            plt.show()
+            return basic_strategy_percentage
 
 
 class AnalysisAll:
