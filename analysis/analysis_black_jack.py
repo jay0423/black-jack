@@ -32,7 +32,9 @@ class WinPercentage:
         exp) _,_ = a.win_percentage(split=1000, plot=True)
         """
         if how == "all":
-            percentage = round(self.df["get_coin"].sum() / len(self.df), 5) * 100 + 50
+            p = self.df[self.df["get_coin"] > 0]["get_coin"].sum()
+            n = self.df[self.df["get_coin"] < 0]["get_coin"].sum()
+            percentage = round((p / (p - n)) * 100, 5)
             return percentage
         elif how == "cut":
             #dfのget_coin列をスプリット数に等分したcut_num_listを生成．
@@ -49,8 +51,10 @@ class WinPercentage:
             #各プレイ回数における勝率を算出
             percentage = [0]
             for i in range(len(cut_num_list)-1):
-                percentage.append((self.df["get_coin"][:cut_num_list[i+1]].sum()) / cut_num_list[i+1])
-            percentage = list(map(lambda x: round(x*100+50, 3), percentage))
+                df = self.df[:cut_num_list[i+1]]
+                p = df[df["get_coin"] > 0]["get_coin"].sum()
+                n = df[df["get_coin"] < 0]["get_coin"].sum()
+                percentage.append(round((p / (p - n)) * 100, 5))
             print("{}%".format(percentage[-1]))
             #描画
             if plot:
@@ -92,7 +96,7 @@ class WinPercentage:
             plt.show()
         return  self.df.groupby("play_counts")["get_coin"].apply(func)
     
-    def basic_strategy_win_percentage(self, plot=True, win_coin=True, prints=False, kind="percentage"):
+    def basic_strategy_win_percentage(self, plot=True, how="coin", prints=False, kind="percentage"):
         """
         ベーシックストラテジーの各勝率を求める．
         win_coinは，勝率の算出法を示しており，Trueのときは勝った枚数から独自のアルゴリズムで勝率を算出している．
@@ -104,15 +108,23 @@ class WinPercentage:
         columns = list(basic_strategy.columns)
         index = list(basic_strategy.index)
 
-        if win_coin:
+        if how == "coin":
+            # 勝利したコイン枚数 / （勝利したコイン枚数　＋　敗北したコイン枚数）で勝率を算出
             df = self.df
-            df["split2"] = df["split"].map(lambda x: x+1)
-            basic_strategy_sum = pd.crosstab(index=df["first_PC"], columns=df["first_DC"], values=df["get_coin"], aggfunc="sum").reindex(index=index, columns=columns)
-            basic_strategy_count = pd.crosstab(index=df["first_PC"], columns=df["first_DC"]).reindex(index=index, columns=columns)
-            basic_strategy_percentage = basic_strategy_sum / basic_strategy_count
-            basic_strategy_percentage = basic_strategy_percentage.applymap(lambda x: round(x*100+50, 2))
-            basic_strategy_percentage = basic_strategy_percentage.iloc[1:18]
+            df_p = df[df["get_coin"] > 0]
+            df_n = df[df["get_coin"] < 0]
+            basic_strategy_p = pd.crosstab(index=df_p["first_PC"], columns=df_p["first_DC"], values=df_p["get_coin"], aggfunc="sum").reindex(index=index, columns=columns)
+            basic_strategy_n = pd.crosstab(index=df_n["first_PC"], columns=df_n["first_DC"], values=df_n["get_coin"], aggfunc="sum").reindex(index=index, columns=columns).fillna(0)
+            basic_strategy_percentage = basic_strategy_p / (basic_strategy_p - basic_strategy_n)
+            basic_strategy_percentage = basic_strategy_percentage.applymap(lambda x: round(x*100, 2))
+            if prints:
+                print(basic_strategy)
+                print("win_coin")
+                print(basic_strategy_p)
+                print("\nlose_coin")
+                print(basic_strategy_n)
         else:
+            # 単純に勝負にかつ確率を算出．引き分けが含まれない分勝率は低くなる傾向にある．
             df = self.df
             df["split2"] = df["split"].map(lambda x: x+1)
             def func(x):
@@ -125,12 +137,14 @@ class WinPercentage:
             basic_strategy_count = pd.crosstab(index=df["first_PC"], columns=df["first_DC"], values=df["split2"], aggfunc="sum").reindex(index=index, columns=columns)
             basic_strategy_percentage = basic_strategy_sum / basic_strategy_count
             basic_strategy_percentage = basic_strategy_percentage.applymap(lambda x: round(x*100, 2))
-        if prints:
-            print("sum")
-            print(basic_strategy_sum)
-            print("\ncount")
-            print(basic_strategy_count)
+            if prints:
+                print(basic_strategy)
+                print("sum")
+                print(basic_strategy_sum)
+                print("\ncount")
+                print(basic_strategy_count)
         if plot:
+        #描画
             if kind == "sum":
                 fig, ax = plt.subplots(figsize=(9, 9))
                 fig = sns.heatmap(basic_strategy_sum, square=False, ax=ax, fmt=".0f")
