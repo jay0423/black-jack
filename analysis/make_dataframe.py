@@ -199,3 +199,40 @@ class MakeDataFrameCardCustomized(MakeDataFrame):
         print("DataFrameを作成")
         df = self.edit_df(df)
         return df
+
+
+
+class MakeDataFrameActionCustomized(MakeDataFrameCardCustomized):
+    """
+    black_jack.pyのMakeBlackJackCardCustomizedクラスから，データを取得してデータフレームを作成する．
+    カード初期値，プレイヤーのファーストアクションを指定することができる．
+    ベーシックストラテジーのカラム及び指定された回数だけブラックジャックをプレイし，DataFrameを作成する．
+    """
+
+    first_P_action = ""
+
+    def get_first_P_action(self):
+        self.first_P_action = "H"
+
+    def get_game(self):
+        (player_card, dealer_card, player_score, dealer_score, player_WL, bet_chip, play_counts, get_coin, first_PC, first_DC) = self.a.main(dealer_open_card=self.dealer_open_card, player_card_first=self.player_card_first, first_P_action=self.first_P_action)
+        self.player_card.append(player_card)
+        self.dealer_card.append(dealer_card)
+        self.player_score.append(player_score)
+        self.dealer_score.append(dealer_score)
+        self.player_WL.append(player_WL)
+        self.bet_chip.append(bet_chip)
+        self.play_counts.append(play_counts)
+        self.get_coin.append(get_coin)
+        self.first_PC.append(first_PC)
+        self.first_DC.append(first_DC)
+
+    def main(self):
+        self.a = bj.MakeBlackJackActionCustomized(self.DECK)
+        self.a.setup()
+        self.import_basic_strategy()
+        self.get_first_P_action()
+        df = self.play_black_jack()
+        print("DataFrameを作成")
+        df = self.edit_df(df)
+        return df
