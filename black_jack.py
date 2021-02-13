@@ -475,6 +475,117 @@ class MakeBlackJackCardCustomized(MakeBlackJack):
         return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.play_counts, get_coin, self.first_PC, self.first_DC
 
 
+class MakeBlackJackActionCustomized(MakeBlackJack):
+    """
+    プレイヤーのカードとディーラーのオープンカード，ファーストアクションを入力値とし，始めに配布されるプレイヤーのカードを指定することができる．
+    これにより部分的に詳細なデータ分析を行うことができる．
+    """
+
+    def player_draw(self, first_P_action):
+        """
+        初めてのアクション時はfirst_P_actionを採用．
+        """
+        #プレイヤ―がスタンドするまで処理を続ける．
+        while True:
+            self.make_player_score()
+
+            #プレイヤーがバストしたときの処理
+            if self.player_score[self.j_adj] >= 22:
+                break
+            
+            PC = self.decide_PC()
+            DC = self.card_dict[self.dealer_card[1]]
+            if self.first_PC == "":
+                self.first_PC = str(PC)
+                self.first_DC = str(DC)
+                #first_P_actionで追加
+                P_action = first_P_action
+            else:
+                #プレイヤーの行動を取得
+                P_action = self.select_HDPS_from_basic_strategy(self.basic_strategy_index.index(str(PC)), self.basic_strategy_columns.index(str(DC)))
+            
+            #プレイヤーが行動を実行
+            if P_action == 'S':
+                break
+            elif P_action == 'H':
+                self.get_H_action()
+            elif P_action == 'D':
+                self.get_D_action()
+                break
+            elif P_action == 'P':
+                self.get_P_action()
+                break
+
+    def main(self, dealer_open_card, player_card_first, first_P_action):
+        #初期化
+        self.j_adj = 0 #player_cardの処理する場所
+        self.dealer_card = [] #ディーラーのカード
+        self.player_card = [] #プレイヤーのカード
+        self.player_score = [0] #プレイヤーのスコア
+        self.first_PC = ""
+        self.first_DC = ""
+        self.basic_strategy_list = self.basic_strategy_original_list.copy()
+
+        self.play_counts += 1
+        if self.RESET:
+            if self.play_counts == 1: #連続で対戦する場合はシャッフルしない．
+                self.card_list_index = self.card_list_index_original.copy()
+                self.shuffle_card()
+        else:
+            self.card_list_index = self.card_list_index_original.copy()
+            self.shuffle_card()
+
+        #ディら―の配られるカードを作成．オープンカードは2枚目である．
+        self.card_list_index.remove(dealer_open_card) #カードの削除
+        self.dealer_card = [self.card_list_index[0]]
+        self.card_list_index.pop(0) #カードの削除
+        self.dealer_card.append(dealer_open_card)
+        #プレイヤーのカードを追加
+        self.player_card = [player_card_first]
+        self.card_list_index.remove(player_card_first[0]) #カードの削除
+        self.card_list_index.remove(player_card_first[1]) #カードの削除
+        
+        self.check_natural_black_jack()
+
+        #掛け金の設定
+        self.bet_chip = [1]
+        #スプリットした際の繰り返し
+        j = 0
+        while True:
+            #勝負が終わった際の処理
+            #プレイヤーがスプリットしている際
+            if len(self.player_card) >= 2 and len(self.player_card[-1]) != 1:
+                break
+            #プレイヤーがスプリットしていない場合
+            elif len(self.player_card) == 1 and j != 0:
+                break
+            #Aでスプリットした場合
+            elif len(self.player_card)==2 and self.player_card[0][0][0] == "A":
+                break
+            #スプリットしているときの位置調整の処理
+            if len(self.player_card) >= 2:
+                for i, card in enumerate(self.player_card):
+                    if len(card) == 1:
+                        self.j_adj = i
+                        break
+                self.player_card[self.j_adj].append(self.card_list_index[0])
+                self.card_list_index.pop(0)
+            
+            #プレイヤーがカードを引く処理
+            self.player_draw(first_P_action)
+            j += 1
+
+        #プレイヤーのスコアを算出
+        self.get_player_score()
+        #ディーラーがカードを引く処理
+        dealer_score = self.dealer_draw()
+        #勝敗の決定
+        player_WL = self.get_winner(dealer_score)
+        #獲得したコインの枚数を追加
+        get_coin = self.add_get_coin(player_WL)
+
+        return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.play_counts, get_coin, self.first_PC, self.first_DC
+
 
 if __name__ == "__main__":
     a = MakeBlackJack()
