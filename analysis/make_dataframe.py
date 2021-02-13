@@ -99,6 +99,7 @@ class MakeDataFrameCardCustomized(MakeDataFrame):
     ベーシックストラテジーのカラム及び指定された回数だけブラックジャックをプレイし，DataFrameを作成する．
     """
 
+    basic_strategy = pd.DataFrame()
     columns = []
     index = []
 
@@ -108,9 +109,9 @@ class MakeDataFrameCardCustomized(MakeDataFrame):
     def import_basic_strategy(self):
         basic_strategy = pd.read_csv('../csv/basic_strategy.csv')
         basic_strategy.index = basic_strategy.PC
-        basic_strategy.drop('PC', axis=1, inplace=True)
-        self.columns = list(basic_strategy.columns)
-        self.index = list(basic_strategy.index)
+        self.basic_strategy = basic_strategy.drop('PC', axis=1)
+        self.columns = list(self.basic_strategy.columns)
+        self.index = list(self.basic_strategy.index)
 
     def get_dealer_open_card(self, DC_i):
         DC = self.columns[DC_i]
@@ -211,11 +212,31 @@ class MakeDataFrameActionCustomized(MakeDataFrameCardCustomized):
 
     first_P_action = ""
 
-    def get_first_P_action(self):
-        self.first_P_action = "H"
+    def __init__(self, GAME_TIME=100000, DECK=6, RESET=False, MAX_PLAY_COUNTS=5):
+        self.DECK = DECK
+        self.a = bj.MakeBlackJack(DECK, RESET=RESET)
+        self.GAME_TIME = GAME_TIME
+        self.RESET = RESET
+        self.MAX_PLAY_COUNTS = MAX_PLAY_COUNTS
+        #初期化
+        self.player_card = []
+        self.dealer_card = []
+        self.player_score = []
+        self.dealer_score = []
+        self.player_WL = []
+        self.bet_chip = []
+        self.play_counts = []
+        self.get_coin = []
+        self.first_PC = []
+        self.first_DC = []
+        #追加
+        self.first_P_action = []
+        
+    # def get_first_P_action(self):
+    #     self.first_P_action = "H"
 
-    def get_game(self):
-        (player_card, dealer_card, player_score, dealer_score, player_WL, bet_chip, play_counts, get_coin, first_PC, first_DC) = self.a.main(dealer_open_card=self.dealer_open_card, player_card_first=self.player_card_first, first_P_action=self.first_P_action)
+    def get_game(self, action):
+        (player_card, dealer_card, player_score, dealer_score, player_WL, bet_chip, play_counts, get_coin, first_PC, first_DC, first_P_action) = self.a.main(dealer_open_card=self.dealer_open_card, player_card_first=self.player_card_first, first_P_action=action)
         self.player_card.append(player_card)
         self.dealer_card.append(dealer_card)
         self.player_score.append(player_score)
@@ -226,13 +247,49 @@ class MakeDataFrameActionCustomized(MakeDataFrameCardCustomized):
         self.get_coin.append(get_coin)
         self.first_PC.append(first_PC)
         self.first_DC.append(first_DC)
+        self.first_P_action.append(first_P_action)
 
+    def play_black_jack(self):
+        for action in ["H", "S", "D", "P"]:
+            for i in tqdm(range(self.GAME_TIME)):
+                for j in range(10):
+                    self.dealer_open_card = self.get_dealer_open_card(j)
+                    for k in range(29):
+                        if action != "P": #スプリットの回避
+                            self.player_card_first = self.get_player_card_first(k)
+                            if self.RESET:
+                                if self.MAX_PLAY_COUNTS == self.a.play_counts:
+                                    self.a.play_counts = 0
+                            self.get_game(action)
+                        else:
+                            if k >= 19:
+                                self.player_card_first = self.get_player_card_first(k)
+                                if self.RESET:
+                                    if self.MAX_PLAY_COUNTS == self.a.play_counts:
+                                        self.a.play_counts = 0
+                                self.get_game(action)
+                                
+        dicts = {
+            "player_card": self.player_card,
+            "dealer_card": self.dealer_card,
+            "player_score": self.player_score,
+            "dealer_score": self.dealer_score,
+            "player_WL": self.player_WL,
+            "bet_chip": self.bet_chip,
+            "play_counts": self.play_counts,
+            "get_coin": self.get_coin,
+            "first_PC": self.first_PC,
+            "first_DC": self.first_DC,
+            "first_P_action": self.first_P_action,
+        }
+        return self.make_df(dicts)
+    
     def main(self):
         self.a = bj.MakeBlackJackActionCustomized(self.DECK)
         self.a.setup()
         self.import_basic_strategy()
-        self.get_first_P_action()
+        # self.get_first_P_action()
         df = self.play_black_jack()
         print("DataFrameを作成")
         df = self.edit_df(df)
-        return df
+        return df, self.basic_strategy

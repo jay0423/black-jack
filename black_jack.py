@@ -42,7 +42,6 @@ class MakeBlackJack:
     card_dict = {}
     card_list_index = [] #デッキのカードリスト
     card_list_index_original = []
-    basic_strategy = pd.DataFrame() #ベーシックストラテジーの表
     #DataFrameだと.locの処理に時間を要するため，ベーシックストラテジーをリストに変換して使用する．
     basic_strategy_list = []
     basic_strategy_original_list = []
@@ -66,6 +65,8 @@ class MakeBlackJack:
         self.play_counts = 0 #プレイしている回数
         self.dealer_card = [] #ディーラーのカード
         self.player_card = [] #プレイヤーのカード
+        #basic_strategy
+        self.basic_strategy = pd.DataFrame() #ベーシックストラテジーの表
 
     def import_cards(self):
         #AからKのカードのリストをインポート
@@ -80,6 +81,9 @@ class MakeBlackJack:
         self.card_dict = dict(zip(list(card_list.index), list(card_list.num)))
         self.card_list_index_original = self.card_list_index.copy()
     
+    def df_to_list(self, df):
+        return [list(df.iloc[i]) for i in range(len(df))]
+    
     def import_basic_strategy(self):
         #ベーシックストラテジーの表をcsvファイルからインポート
         try:
@@ -88,7 +92,7 @@ class MakeBlackJack:
             self.basic_strategy = pd.read_csv('csv/basic_strategy.csv')
         self.basic_strategy.index = self.basic_strategy.PC
         self.basic_strategy.drop('PC', axis=1, inplace=True)
-        self.basic_strategy_list = [list(self.basic_strategy.iloc[i]) for i in range(len(self.basic_strategy))]
+        self.basic_strategy_list = self.df_to_list(self.basic_strategy)
         self.basic_strategy_columns = list(self.basic_strategy.columns)
         self.basic_strategy_index = list(self.basic_strategy.index)
         self.basic_strategy_original_list = self.basic_strategy_list.copy()
@@ -96,11 +100,11 @@ class MakeBlackJack:
     def make_replaced_basic_strategy(self):
         ##時間短縮させるため，セットアップ時に置換の処理を終わらせておく
         basic_strategy_HDP_S = self.basic_strategy.replace(['H', 'D', 'P'], 'S')
-        self.basic_strategy_HDP_S =  [list(basic_strategy_HDP_S.iloc[i]) for i in range(len(basic_strategy_HDP_S))]
+        self.basic_strategy_HDP_S =  self.df_to_list(basic_strategy_HDP_S)
         basic_strategy_D_H = self.basic_strategy.replace('D', 'H')
         basic_strategy_D_H.iloc[15, 1:5] = 'S' #A17を変更
-        self.basic_strategy_D_H = [list(basic_strategy_D_H.iloc[i]) for i in range(len(basic_strategy_D_H))]
-
+        self.basic_strategy_D_H = self.df_to_list(basic_strategy_D_H)
+        
     def setup(self):
         #前処理
         self.import_cards()
@@ -584,7 +588,7 @@ class MakeBlackJackActionCustomized(MakeBlackJack):
         #獲得したコインの枚数を追加
         get_coin = self.add_get_coin(player_WL)
 
-        return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.play_counts, get_coin, self.first_PC, self.first_DC
+        return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.play_counts, get_coin, self.first_PC, self.first_DC, first_P_action
 
 
 if __name__ == "__main__":
