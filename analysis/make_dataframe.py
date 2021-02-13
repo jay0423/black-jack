@@ -231,9 +231,6 @@ class MakeDataFrameActionCustomized(MakeDataFrameCardCustomized):
         self.first_DC = []
         #追加
         self.first_P_action = []
-        
-    # def get_first_P_action(self):
-    #     self.first_P_action = "H"
 
     def get_game(self, action):
         (player_card, dealer_card, player_score, dealer_score, player_WL, bet_chip, play_counts, get_coin, first_PC, first_DC, first_P_action) = self.a.main(dealer_open_card=self.dealer_open_card, player_card_first=self.player_card_first, first_P_action=action)
@@ -288,7 +285,6 @@ class MakeDataFrameActionCustomized(MakeDataFrameCardCustomized):
         self.a = bj.MakeBlackJackActionCustomized(self.DECK)
         self.a.setup()
         self.import_basic_strategy()
-        # self.get_first_P_action()
         df = self.play_black_jack()
         print("DataFrameを作成")
         df = self.edit_df(df)

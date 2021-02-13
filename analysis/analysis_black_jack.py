@@ -212,6 +212,17 @@ class AnalysisAll:
             return last_percentage_list
         
 
-if __name__ == "__main__":
-    a = MakeDataFrame(10000, 6, True, 10)
-    a.main()
+class MakeBasicStrategy:
+    """
+    ベーシックストラテジーを作成するクラス
+    """
+    
+    def __init__(self, df):
+        self.df = df
+        
+    def action_df(self, action):
+        df_A = df[df["first_P_action"]==action]
+        df_A = pd.crosstab(index=df_A["first_PC"], columns=df_A["first_DC"], values=df_A["get_coin"], aggfunc="sum")
+        return df_A
+    
+    
