@@ -210,8 +210,6 @@ class MakeDataFrameActionCustomized(MakeDataFrameCardCustomized):
     ベーシックストラテジーのカラム及び指定された回数だけブラックジャックをプレイし，DataFrameを作成する．
     """
 
-    first_P_action = ""
-
     def __init__(self, GAME_TIME=100000, DECK=6, RESET=False, MAX_PLAY_COUNTS=5):
         self.DECK = DECK
         self.a = bj.MakeBlackJack(DECK, RESET=RESET)
@@ -280,11 +278,48 @@ class MakeDataFrameActionCustomized(MakeDataFrameCardCustomized):
             "first_P_action": self.first_P_action,
         }
         return self.make_df(dicts)
-    
-    def main(self):
+
+    def setup(self):
         self.a = bj.MakeBlackJackActionCustomized(self.DECK)
         self.a.setup()
         self.import_basic_strategy()
+    
+    def test(self, player_card_first, dealer_open_card, action):
+        self.setup()
+        #初期化
+        self.player_card = []
+        self.dealer_card = []
+        self.player_score = []
+        self.dealer_score = []
+        self.player_WL = []
+        self.bet_chip = []
+        self.play_counts = []
+        self.get_coin = []
+        self.first_PC = []
+        self.first_DC = []
+        self.first_P_action = []
+        # 
+        self.dealer_open_card = dealer_open_card
+        for i in range(self.GAME_TIME):
+            self.player_card_first = player_card_first.copy()
+            self.get_game(action)
+        dicts = {
+            "player_card": self.player_card,
+            "dealer_card": self.dealer_card,
+            "player_score": self.player_score,
+            "dealer_score": self.dealer_score,
+            "player_WL": self.player_WL,
+            "bet_chip": self.bet_chip,
+            "play_counts": self.play_counts,
+            "get_coin": self.get_coin,
+            "first_PC": self.first_PC,
+            "first_DC": self.first_DC,
+            "first_P_action": self.first_P_action,
+        }
+        return self.make_df(dicts)
+
+    def main(self):
+        self.setup()
         df = self.play_black_jack()
         print("DataFrameを作成")
         df = self.edit_df(df)

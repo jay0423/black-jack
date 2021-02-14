@@ -54,8 +54,6 @@ class MakeBlackJack:
     player_score = [0] #プレイヤーのスコア
     bet_chip = [1] #ベットするチップの枚数（ダブルダウンの時だけ2枚）
 
-    first_PC = "" #最初のプレイヤーの手札
-    first_DC = "" #最初のディーラーのオープン手札
 
     j_adj = 0 #スプリットした際の処理位置．j_adj回のスプリット．
 
@@ -67,6 +65,8 @@ class MakeBlackJack:
         self.player_card = [] #プレイヤーのカード
         #basic_strategy
         self.basic_strategy = pd.DataFrame() #ベーシックストラテジーの表
+        self.first_PC = "" #最初のプレイヤーの手札
+        self.first_DC = "" #最初のディーラーのオープン手札
 
     def import_cards(self):
         #AからKのカードのリストをインポート
@@ -548,7 +548,6 @@ class MakeBlackJackActionCustomized(MakeBlackJack):
         self.player_card = [player_card_first]
         self.card_list_index.remove(player_card_first[0]) #カードの削除
         self.card_list_index.remove(player_card_first[1]) #カードの削除
-        
         self.check_natural_black_jack()
 
         #掛け金の設定
@@ -587,7 +586,6 @@ class MakeBlackJackActionCustomized(MakeBlackJack):
         player_WL = self.get_winner(dealer_score)
         #獲得したコインの枚数を追加
         get_coin = self.add_get_coin(player_WL)
-
         return self.player_card, self.dealer_card, self.player_score, dealer_score, player_WL, self.bet_chip, self.play_counts, get_coin, self.first_PC, self.first_DC, first_P_action
 
 

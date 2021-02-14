@@ -216,13 +216,48 @@ class MakeBasicStrategy:
     """
     ベーシックストラテジーを作成するクラス
     """
+
+    basic_strategy = pd.read_csv('../csv/basic_strategy.csv')
+    basic_strategy.index = basic_strategy.PC
+    basic_strategy.drop('PC', axis=1, inplace=True)
+    columns = list(basic_strategy.columns)
+    index = list(basic_strategy.index)
     
     def __init__(self, df):
         self.df = df
         
     def action_df(self, action):
-        df_A = df[df["first_P_action"]==action]
-        df_A = pd.crosstab(index=df_A["first_PC"], columns=df_A["first_DC"], values=df_A["get_coin"], aggfunc="sum")
+        df_A = self.df[self.df["first_P_action"]==action]
+        df_A = pd.crosstab(index=df_A["first_PC"], columns=df_A["first_DC"], values=df_A["get_coin"], aggfunc="sum").reindex(index=self.index, columns=self.columns)
         return df_A
     
+    def select_SHDP(self, q1,q2,q3,q4):
+        if q4 == np.nan:
+            q4 = -9999
+        if q1 == max(q1, q2, q3, q4):
+            return "S"
+        elif q2 == max(q1, q2, q3, q4):
+            return "H"
+        elif q3 == max(q1, q2, q3, q4):
+            return "D"
+        else:
+            return "P"
     
+    def make_basic_strategy(self):
+        df_H = self.action_df("H")
+        df_S = self.action_df("S")
+        df_D = self.action_df("D")
+        df_P = self.action_df("P")
+        print("H", df_H)
+        print("S", df_S)
+        print("D", df_D)
+        print("P", df_P)
+        new_bs = self.basic_strategy.copy()
+        for i in self.columns:
+            for j in self.index:
+                try:
+                    new_bs.loc[j,i] = self.select_SHDP(df_S.loc[j,i], df_H.loc[j,i], df_D.loc[j,i], df_P.loc[j,i])
+                except:
+                    new_bs.loc[j,i] = self.select_SHDP(df_S.loc[j,i], df_H.loc[j,i], df_D.loc[j,i])
+
+        return new_bs
