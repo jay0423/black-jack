@@ -247,9 +247,7 @@ class MakeDataFrameActionCustomized(MakeDataFrameCardCustomized):
 
     def play_black_jack(self):
         for action in ["H", "S", "D", "P"]:
-            # print('Making DataFrame whose first_action is "{}"'.format(action))
             for i in range(self.GAME_TIME):
-            # for i in tqdm(range(self.GAME_TIME)):
                 for j in range(10):
                     self.dealer_open_card = self.get_dealer_open_card(j)
                     for k in range(29):
@@ -330,6 +328,5 @@ class MakeDataFrameActionCustomized(MakeDataFrameCardCustomized):
         if type(bs) == type(pd.DataFrame()):
             self.change_basic_strategy(bs)
         df = self.play_black_jack()
-        print("DataFrameを作成")
         df = self.edit_df(df)
         return df, self.basic_strategy

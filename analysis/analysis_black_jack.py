@@ -274,11 +274,27 @@ class MakeBasicStrategy:
                     new_bs.loc[j,i] = self.select_SHDP(df_S.loc[j,i], df_H.loc[j,i], df_D.loc[j,i])
         return new_bs
 
+    def make_game_time_list(self):
+        game_time_list = [self.GAME_TIME] * self.generations
+        if self.generations >= 4 and self.generations <= 5:
+            game_time_list[0] = int(self.GAME_TIME / 5)
+            game_time_list[1] = int(self.GAME_TIME / 2)
+            game_time_list[-1] = int(self.GAME_TIME * 2)
+        elif self.generations >= 6:
+            game_time_list[0] = int(self.GAME_TIME / 10)
+            game_time_list[1] = int(self.GAME_TIME / 5)
+            game_time_list[-2] = int(self.GAME_TIME * 2)
+            game_time_list[-1] = int(self.GAME_TIME * 4)
+        return game_time_list
+
     def main(self):
         a = MakeDataFrameActionCustomized(self.GAME_TIME, 6, False)
         bs_chage = pd.read_csv('../csv/basic_strategy2.csv')
+        game_time_list = self.make_game_time_list()
+        print(game_time_list)
         nan_count_list = []
-        for i in tqdm(range(self.generations)):
+        for game_time in tqdm(game_time_list):
+            a.GAME_TIME = game_time
             df, bs = a.main(bs_chage)
             self.df = df.copy()
             new_bs = self.make_basic_strategy()
