@@ -214,7 +214,7 @@ class AnalysisAll:
 
 class MakeBasicStrategy:
     """
-    ベーシックストラテジーを作成するクラス
+    make_dataframe.pyのMakeDataFrameActionCustomizedで生成されたゲーム記録のDataFrameから，最適なベーシックストラテジーを作成する．
     """
 
     basic_strategy = pd.read_csv('../csv/basic_strategy.csv')
@@ -227,11 +227,18 @@ class MakeBasicStrategy:
         self.df = df
         
     def action_df(self, action):
+        """
+        指定されたactionを抽出したデータフレームからクラステーブルを作成して返す．
+        return: クロステーブル
+        """
         df_A = self.df[self.df["first_P_action"]==action]
         df_A = pd.crosstab(index=df_A["first_PC"], columns=df_A["first_DC"], values=df_A["get_coin"], aggfunc="sum").reindex(index=self.index, columns=self.columns)
         return df_A
     
     def select_SHDP(self, q1,q2,q3,q4):
+        """
+        get_coinの合計が最大値のアクションを返す．
+        """
         if q4 == np.nan:
             q4 = -9999
         if q1 == max(q1, q2, q3, q4):
@@ -244,6 +251,9 @@ class MakeBasicStrategy:
             return "P"
     
     def make_basic_strategy(self, prints=False):
+        """
+        最適なベーシックストラテジーを作成する．
+        """
         df_H = self.action_df("H")
         df_S = self.action_df("S")
         df_D = self.action_df("D")
@@ -260,5 +270,7 @@ class MakeBasicStrategy:
                     new_bs.loc[j,i] = self.select_SHDP(df_S.loc[j,i], df_H.loc[j,i], df_D.loc[j,i], df_P.loc[j,i])
                 except:
                     new_bs.loc[j,i] = self.select_SHDP(df_S.loc[j,i], df_H.loc[j,i], df_D.loc[j,i])
-
         return new_bs
+
+    def main(self):
+        new_bs = self.make_basic_strategy()

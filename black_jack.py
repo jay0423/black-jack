@@ -51,22 +51,24 @@ class MakeBlackJack:
     basic_strategy_HDP_S  = []
     basic_strategy_D_H  = []
 
+    first_PC = "" #最初のプレイヤーの手札
+    first_DC = "" #最初のディーラーのオープン手札
+
     player_score = [0] #プレイヤーのスコア
     bet_chip = [1] #ベットするチップの枚数（ダブルダウンの時だけ2枚）
 
 
     j_adj = 0 #スプリットした際の処理位置．j_adj回のスプリット．
 
-    def __init__(self, DECK=6, RESET=False):
+    def __init__(self, DECK=6, RESET=False, basic_strategy_num=""):
         self.DECK = DECK #使用するトランプのデッキ数
         self.RESET = RESET
         self.play_counts = 0 #プレイしている回数
         self.dealer_card = [] #ディーラーのカード
         self.player_card = [] #プレイヤーのカード
         #basic_strategy
+        self.basic_strategy_num = basic_strategy_num # ベーシックストラテジーに使用するcsvファイルを選択することができる．
         self.basic_strategy = pd.DataFrame() #ベーシックストラテジーの表
-        self.first_PC = "" #最初のプレイヤーの手札
-        self.first_DC = "" #最初のディーラーのオープン手札
 
     def import_cards(self):
         #AからKのカードのリストをインポート
@@ -84,18 +86,25 @@ class MakeBlackJack:
     def df_to_list(self, df):
         return [list(df.iloc[i]) for i in range(len(df))]
     
-    def import_basic_strategy(self):
-        #ベーシックストラテジーの表をcsvファイルからインポート
+
+    def edit_basic_strategy(self):
         try:
-            self.basic_strategy = pd.read_csv('../csv/basic_strategy.csv')
+            self.basic_strategy.index = self.basic_strategy.PC
+            self.basic_strategy.drop('PC', axis=1, inplace=True)
         except:
-            self.basic_strategy = pd.read_csv('csv/basic_strategy.csv')
-        self.basic_strategy.index = self.basic_strategy.PC
-        self.basic_strategy.drop('PC', axis=1, inplace=True)
+            pass
         self.basic_strategy_list = self.df_to_list(self.basic_strategy)
         self.basic_strategy_columns = list(self.basic_strategy.columns)
         self.basic_strategy_index = list(self.basic_strategy.index)
         self.basic_strategy_original_list = self.basic_strategy_list.copy()
+
+    def import_basic_strategy(self):
+        #ベーシックストラテジーの表をcsvファイルからインポート
+        try:
+            self.basic_strategy = pd.read_csv('../csv/basic_strategy{}.csv'.format(self.basic_strategy_num))
+        except:
+            self.basic_strategy = pd.read_csv('csv/basic_strategy{}.csv'.format(self.basic_strategy_num))
+        self.edit_basic_strategy()
 
     def make_replaced_basic_strategy(self):
         ##時間短縮させるため，セットアップ時に置換の処理を終わらせておく

@@ -210,9 +210,10 @@ class MakeDataFrameActionCustomized(MakeDataFrameCardCustomized):
     ベーシックストラテジーのカラム及び指定された回数だけブラックジャックをプレイし，DataFrameを作成する．
     """
 
-    def __init__(self, GAME_TIME=100000, DECK=6, RESET=False, MAX_PLAY_COUNTS=5):
+    def __init__(self, GAME_TIME=100000, DECK=6, RESET=False, MAX_PLAY_COUNTS=5, basic_strategy_num=""):
         self.DECK = DECK
-        self.a = bj.MakeBlackJack(DECK, RESET=RESET)
+        self.basic_strategy_num = basic_strategy_num
+        self.a = bj.MakeBlackJackActionCustomized(DECK, RESET=RESET, basic_strategy_num=basic_strategy_num)
         self.GAME_TIME = GAME_TIME
         self.RESET = RESET
         self.MAX_PLAY_COUNTS = MAX_PLAY_COUNTS
@@ -281,7 +282,6 @@ class MakeDataFrameActionCustomized(MakeDataFrameCardCustomized):
         return self.make_df(dicts)
 
     def setup(self):
-        self.a = bj.MakeBlackJackActionCustomized(self.DECK)
         self.a.setup()
         self.import_basic_strategy()
     
@@ -319,8 +319,15 @@ class MakeDataFrameActionCustomized(MakeDataFrameCardCustomized):
         }
         return self.make_df(dicts)
 
-    def main(self):
+    def change_basic_strategy(self, bs):
+        self.a.basic_strategy = bs
+        self.a.edit_basic_strategy()
+        self.a.make_replaced_basic_strategy()
+
+    def main(self, bs=0):
         self.setup()
+        if type(bs) == type(pd.DataFrame()):
+            self.change_basic_strategy(bs)
         df = self.play_black_jack()
         print("DataFrameを作成")
         df = self.edit_df(df)
