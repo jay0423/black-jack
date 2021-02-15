@@ -1,4 +1,15 @@
 """
+black_jack.py及び，make_dataframe.pyを用いて作成されるブラックジャックの勝敗DataFrameを元に，データ分析を行う．
+
+WinPercentage
+    DataFrameを元に様々なパータンで勝率を出力する．
+
+AnalysisAll
+    ブラックジャックの設定を変更させてDataFrameを作成し，データ分析を行う．
+    Deck数のよって変化するのかを求める．
+
+MakeBasicStrategy
+    最も勝率が高くなるベーシックストラテジーを最適化する．
 
 """
 
@@ -215,6 +226,13 @@ class AnalysisAll:
 class MakeBasicStrategy:
     """
     make_dataframe.pyのMakeDataFrameActionCustomizedで生成されたゲーム記録のDataFrameから，最適なベーシックストラテジーを作成する．
+    
+    ベーシックストラテジー最適化アルゴリズム
+        1. 全てがS（スタンド）の初期ベーシックストラテジーを用意する．
+        2. 新ベーシックストラテジーを元に指定回数だけブラックジャックをプレイし，DataFrameを生成．
+        3. DataFrameを元にH, S, D, Pの勝率が最も高いものを組み込み，新たなベーシックストラテジーを生成．
+        4. 2に戻り，新たに生成されたベーシックストラテジーを使用して上記の工程を繰り返す．
+        5. generatoins回終了後，最適化が完了．
     """
 
     basic_strategy = pd.read_csv('../csv/basic_strategy.csv')
@@ -275,19 +293,27 @@ class MakeBasicStrategy:
         return new_bs
 
     def make_game_time_list(self):
+        """
+        ゲーム回数のリストを作成して返す．
+        return: list exp) [100, 250, 500, 500, 500, 1000, 2000]
+        """
         game_time_list = [self.GAME_TIME] * self.generations
         if self.generations >= 4 and self.generations <= 5:
             game_time_list[0] = int(self.GAME_TIME / 5)
             game_time_list[1] = int(self.GAME_TIME / 2)
             game_time_list[-1] = int(self.GAME_TIME * 2)
         elif self.generations >= 6:
-            game_time_list[0] = int(self.GAME_TIME / 10)
-            game_time_list[1] = int(self.GAME_TIME / 5)
+            game_time_list[0] = int(self.GAME_TIME / 5)
+            game_time_list[1] = int(self.GAME_TIME / 2)
             game_time_list[-2] = int(self.GAME_TIME * 2)
             game_time_list[-1] = int(self.GAME_TIME * 4)
         return game_time_list
 
     def main(self):
+        """
+        新しいベーシックストラテジーを生成する．
+        初期は全てがSのベーシックストラテジー．
+        """
         a = MakeDataFrameActionCustomized(self.GAME_TIME, 6, False)
         bs_chage = pd.read_csv('../csv/basic_strategy2.csv')
         game_time_list = self.make_game_time_list()
@@ -295,10 +321,10 @@ class MakeBasicStrategy:
         nan_count_list = []
         for game_time in tqdm(game_time_list):
             a.GAME_TIME = game_time
-            df, bs = a.main(bs_chage)
+            df = a.main(bs_chage)
             self.df = df.copy()
             new_bs = self.make_basic_strategy()
-            nan_count_list.append(bs[new_bs == bs].isnull().sum().sum())
+            nan_count_list.append(self.basic_strategy[new_bs == self.basic_strategy].isnull().sum().sum())
             bs_chage = new_bs.copy()
         print(nan_count_list)
         return bs_chage

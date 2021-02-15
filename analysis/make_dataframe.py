@@ -285,6 +285,10 @@ class MakeDataFrameActionCustomized(MakeDataFrameCardCustomized):
         self.import_basic_strategy()
     
     def test(self, player_card_first, dealer_open_card, action):
+        """
+        本メソッドを使用すれば，player_card_first, dealer_open_card, actionを入力とすることで，
+        ベーシックストラテジーの一つの要素のみでゲームシミュレーションを行うことができる．
+        """
         self.setup()
         #初期化
         self.player_card = []
@@ -329,4 +333,4 @@ class MakeDataFrameActionCustomized(MakeDataFrameCardCustomized):
             self.change_basic_strategy(bs)
         df = self.play_black_jack()
         df = self.edit_df(df)
-        return df, self.basic_strategy
+        return df
