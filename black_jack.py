@@ -264,7 +264,8 @@ class MakeBlackJack:
         #プレイヤーの最終得点
         for i in range(len(self.player_score)):
             if self.player_score[i] <= 11:
-                self.player_score[i] += 10
+                if "A" in str(self.player_card[i]): #ダブルダウンして12以上にならなかった時の処理．exp. 4,5,2
+                    self.player_score[i] += 10
             elif self.player_score[i] >= 22:
                 self.player_score[i] = 'BUST'
 

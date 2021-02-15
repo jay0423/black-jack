@@ -246,6 +246,7 @@ class MakeDataFrameActionCustomized(MakeDataFrameCardCustomized):
 
     def play_black_jack(self):
         for action in ["H", "S", "D", "P"]:
+            print('Making DataFrame whose first_action is "{}"'.format(action))
             for i in tqdm(range(self.GAME_TIME)):
                 for j in range(10):
                     self.dealer_open_card = self.get_dealer_open_card(j)

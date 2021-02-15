@@ -243,17 +243,18 @@ class MakeBasicStrategy:
         else:
             return "P"
     
-    def make_basic_strategy(self):
+    def make_basic_strategy(self, prints=False):
         df_H = self.action_df("H")
         df_S = self.action_df("S")
         df_D = self.action_df("D")
         df_P = self.action_df("P")
-        print("H", df_H)
-        print("S", df_S)
-        print("D", df_D)
-        print("P", df_P)
+        if prints:
+            print("H", df_H)
+            print("S", df_S)
+            print("D", df_D)
+            print("P", df_P)
         new_bs = self.basic_strategy.copy()
-        for i in self.columns:
+        for i in tqdm(self.columns):
             for j in self.index:
                 try:
                     new_bs.loc[j,i] = self.select_SHDP(df_S.loc[j,i], df_H.loc[j,i], df_D.loc[j,i], df_P.loc[j,i])
