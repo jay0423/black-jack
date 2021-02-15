@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from tqdm import tqdm
 
-from make_dataframe import MakeDataFrame, MakeDataFrameCardCustomized
+from make_dataframe import MakeDataFrame, MakeDataFrameCardCustomized, MakeDataFrameActionCustomized
 
 class WinPercentage:
     """
@@ -223,9 +223,11 @@ class MakeBasicStrategy:
     columns = list(basic_strategy.columns)
     index = list(basic_strategy.index)
     
-    def __init__(self, df):
+    def __init__(self, df=0, GAME_TIME=100, generations=2):
         self.df = df
-        
+        self.GAME_TIME = GAME_TIME
+        self.generations = generations
+
     def action_df(self, action):
         """
         指定されたactionを抽出したデータフレームからクラステーブルを作成して返す．
@@ -264,7 +266,7 @@ class MakeBasicStrategy:
             print("D", df_D)
             print("P", df_P)
         new_bs = self.basic_strategy.copy()
-        for i in tqdm(self.columns):
+        for i in self.columns:
             for j in self.index:
                 try:
                     new_bs.loc[j,i] = self.select_SHDP(df_S.loc[j,i], df_H.loc[j,i], df_D.loc[j,i], df_P.loc[j,i])
@@ -273,4 +275,14 @@ class MakeBasicStrategy:
         return new_bs
 
     def main(self):
-        new_bs = self.make_basic_strategy()
+        a = MakeDataFrameActionCustomized(self.GAME_TIME, 6, False)
+        bs_chage = pd.read_csv('../csv/basic_strategy2.csv')
+        nan_count_list = []
+        for i in tqdm(range(self.generations)):
+            df, bs = a.main(bs_chage)
+            self.df = df.copy()
+            new_bs = self.make_basic_strategy()
+            nan_count_list.append(bs[new_bs == bs].isnull().sum().sum())
+            bs_chage = new_bs.copy()
+        print(nan_count_list)
+        return bs_chage
