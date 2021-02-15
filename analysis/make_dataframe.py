@@ -25,9 +25,10 @@ class MakeDataFrame:
     指定された回数だけブラックジャックをプレイし，DataFrameを作成する．
     """
 
-    def __init__(self, GAME_TIME=100000, DECK=6, RESET=False, MAX_PLAY_COUNTS=5):
+    def __init__(self, GAME_TIME=100000, DECK=6, RESET=False, MAX_PLAY_COUNTS=5, basic_strategy_num=""):
         self.DECK = DECK
-        self.a = bj.MakeBlackJack(DECK, RESET=RESET)
+        self.a = bj.MakeBlackJack(DECK, RESET=RESET, basic_strategy_num=basic_strategy_num)
+        self.basic_strategy_num = basic_strategy_num
         self.GAME_TIME = GAME_TIME
         self.RESET = RESET
         self.MAX_PLAY_COUNTS = MAX_PLAY_COUNTS
@@ -193,7 +194,7 @@ class MakeDataFrameCardCustomized(MakeDataFrame):
         return self.make_df(dicts)
 
     def main(self):
-        self.a = bj.MakeBlackJackCardCustomized(self.DECK)
+        self.a = bj.MakeBlackJackCardCustomized(self.DECK, basic_strategy_num=self.basic_strategy_num)
         self.a.setup()
         self.import_basic_strategy()
         df = self.play_black_jack()
