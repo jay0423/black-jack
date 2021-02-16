@@ -327,8 +327,23 @@ class MakeDataFrameActionCustomized(MakeDataFrameCardCustomized):
         self.a.basic_strategy = bs
         self.a.edit_basic_strategy()
         self.a.make_replaced_basic_strategy()
+    
+    def clean(self):
+        self.player_card = []
+        self.dealer_card = []
+        self.player_score = []
+        self.dealer_score = []
+        self.player_WL = []
+        self.bet_chip = []
+        self.play_counts = []
+        self.get_coin = []
+        self.first_PC = []
+        self.first_DC = []
+        self.first_P_action = []
+
 
     def main(self, bs=0):
+        self.clean()
         self.setup()
         if type(bs) == type(pd.DataFrame()):
             self.change_basic_strategy(bs)
