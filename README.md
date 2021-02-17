@@ -1,7 +1,7 @@
 # black-jack
 Simulate Black Jack based on "Basic strategy"  
 Analyze dataframe made by Black Jack simulation.  
-And show how to play perfect Black Jack.
+And find a way to play the perfect Black Jack.  
 
 ## Basic strategy
 A basic strategy is a cheat sheet for player action selection.  
@@ -19,12 +19,14 @@ The features and merits of using this project are as follows.
 - You can get blackjack game data.
 - A more accurate analysis can be performed by playing a specified number of times.
 - Analysis classes can be used.
+- You can optimize a basic strategy.
 
 ## Software, Library
 - ipython 7.19.0
 - pandas
 - numpy
 - matplotlib
+- seaborn
 
 ## Sample code
 #### Creating DataFrame
