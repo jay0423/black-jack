@@ -1,7 +1,7 @@
 # black-jack
 Simulate Black Jack based on "Basic strategy"  
 Analyze dataframe made by Black Jack simulation.  
-And show how to play perfect Black Jack.
+And find a way to play the perfect Black Jack.  
 
 ## Basic strategy
 A basic strategy is a cheat sheet for player action selection.  
@@ -19,24 +19,25 @@ The features and merits of using this project are as follows.
 - You can get blackjack game data.
 - A more accurate analysis can be performed by playing a specified number of times.
 - Analysis classes can be used.
+- You can optimize a basic strategy.
 
 ## Software, Library
 - ipython 7.19.0
 - pandas
 - numpy
 - matplotlib
+- seaborn
 
 ## Sample code
 #### Creating DataFrame
-In this example, we will create a data frame that records the game record data of 10000000 times of Blackjack.
+In this example, we will create a data frame that records the game record data of 10000000 times of Blackjack.  
+You can customize the number of matches by "GAME_TIME".
 
 ```
 cd ~/analysis
-import analysis_black_jack as abj
+import make_dataframe
 
-# You can customize the number of matches by "GAME_TIME".
-a = abj.MakeDataFrame(GAME_TIME=1000000, DECK=6, RE_PLAY=False)
-# Get DataFrame
+a = make_dataframe.MakeDataFrame(GAME_TIME=10000000, DECK=6, RESET=False, basic_strategy_num="")
 df = a.main()
 ```
 
@@ -63,25 +64,40 @@ df = a.main()
 #### Visualize the transition of winning percentage probability.
 
 ```
+import analysis_black_jack as abj
+
 b = abj.AnalysisDf(df)
 # Graph the transition of the winning percentage by dividing it into 1000.
-_, _ = b.win_percentage(how="cut", split=1000, plot=True)
+cut_num_list, percentage = b.win_percentage(how="cut", split=1000, plot=True)
 ```
 
-<img src="./img/Transition_of_win_rate_40000000times.png">
+<img src="./img/Transition_of_win_rate_10000000times.PNG" width=500>
 
 
 #### Win rate of each basic strategy.
 
 ```
 b = abj.AnalysisDf(df)
-_ = b.basic_strategy_win_percentage(plot=True, win_coin=False)
+basic_strategy_percentage = b.basic_strategy_win_percentage(plot=True, win_coin=False)
 ```
 
-<img src="./img/basic_strategy_win_percentage.PNG">
+<img src="./img/basic_strategy_win_percentage.PNG" width=500>
+
+
+#### Create an optimized basic strategy.
+
+You can create a newly optimized basic strategy.  
+Based on the output basic strategy, blackjack simulation is performed again, and it is optimized by repeating it.  
+The example below is optimized for 7 generations.
+
+```
+c = abj.MakeBasicStrategy(GAME_TIME=5000, generations=7)
+new_bs = b.main()
+```
+
 
 ## Jupyter notebook
-I created a Jupyter notebook as a sample for data analysis.  
+I created a .ipynb as a sample for data analysis.  
 See the "ipynb/" directory.
 
 ## Author
