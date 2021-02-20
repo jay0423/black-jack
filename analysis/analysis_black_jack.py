@@ -42,6 +42,11 @@ class WinPercentage:
         plot==Trueのとき，横軸にプレイ回数，縦軸にパーセンテージを出力．
         exp) _,_ = a.win_percentage(split=1000, plot=True)
         """
+        # split数がdfの長さを超えれいる場合，エラーが生じるため，警告しsplitをdf長さと一致させる．
+        if split > len(self.df):
+            split = len(self.df)
+            print("'split' exceeds the length of the DataFrame. Change 'split' to {}.".format(len(self.df)))
+
         if how == "all":
             p = self.df[self.df["get_coin"] > 0]["get_coin"].sum()
             n = self.df[self.df["get_coin"] < 0]["get_coin"].sum()
