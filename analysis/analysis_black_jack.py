@@ -30,7 +30,7 @@ class WinPercentage:
     def __init__(self, df):
         self.df = df
     
-    def win_percentage(self, how="cut", split=10, cut_num_list=[], plot=True):
+    def win_percentage(self, how="cut", split=10, cut_num_list=[], plot=True, coin=False):
         """
         勝率を返すメソッド．
         引数howがデフォルトのallのとき，ブラックジャック全体の勝率を返す．
@@ -48,10 +48,14 @@ class WinPercentage:
             print("'split' exceeds the length of the DataFrame. Change 'split' to {}.".format(len(self.df)))
 
         if how == "all":
-            p = self.df[self.df["get_coin"] > 0]["get_coin"].sum()
-            n = self.df[self.df["get_coin"] < 0]["get_coin"].sum()
-            percentage = round((p / (p - n)) * 100, 5)
+            if not coin:
+                p = self.df[self.df["get_coin"] > 0]["get_coin"].sum()
+                n = self.df[self.df["get_coin"] < 0]["get_coin"].sum()
+                percentage = round((p / (p - n)) * 100, 5)
+            else:
+                percentage.append(df["get_coin"].sum())
             return percentage
+
         elif how == "cut":
             #dfのget_coin列をスプリット数に等分したcut_num_listを生成．
             if cut_num_list == []: #split数にしたがって等分割
@@ -68,19 +72,30 @@ class WinPercentage:
             percentage = [0]
             for i in range(len(cut_num_list)-1):
                 df = self.df[:cut_num_list[i+1]]
-                p = df[df["get_coin"] > 0]["get_coin"].sum()
-                n = df[df["get_coin"] < 0]["get_coin"].sum()
-                percentage.append(round((p / (p - n)) * 100, 5))
-            print("{}%".format(percentage[-1]))
+                if not coin:
+                    p = df[df["get_coin"] > 0]["get_coin"].sum()
+                    n = df[df["get_coin"] < 0]["get_coin"].sum()
+                    percentage.append(round((p / (p - n)) * 100, 5))
+                else: #コイン数を表示するとき
+                    percentage.append(df["get_coin"].sum())
+            if not coin:
+                print("{}%".format(percentage[-1]))
+            else:
+                print(percentage[-1])
+
+            percentage = [0 if str(i) == str(np.nan) else i for i in percentage]
             #描画
             if plot:
                 fig = plt.figure()# Figureを設定
                 ax = fig.add_subplot(111)# Axesを追加
-                ax.set_title("Transition of win rate.", fontsize = 16) # Axesのタイトルを設定
-                percentage_all = round(percentage[-1], 1)
-                max_p = max(np.percentile(percentage, 99.5), percentage_all)
-                min_p = min(np.percentile(percentage, 0.5), percentage_all)
-                ax.set_ylim(min_p-0.1, max_p+0.1)
+                if not coin:
+                    ax.set_title("Transition of win rate.", fontsize = 16) # Axesのタイトルを設定
+                    percentage_all = round(percentage[-1], 1)
+                    max_p = max(np.percentile(percentage, 99.5), percentage_all)
+                    min_p = min(np.percentile(percentage, 0.5), percentage_all)
+                    ax.set_ylim(min_p-0.1, max_p+0.1)
+                else: #コイン数を表示するとき
+                    ax.set_title("Changes in the number of coins.", fontsize = 16) # Axesのタイトルを設定
                 ax.plot(cut_num_list, percentage)
                 plt.show()
             return cut_num_list, percentage
