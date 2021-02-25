@@ -1,11 +1,11 @@
 # black-jack
-Simulate Black Jack based on "Basic strategy"  
+Simulate Black Jack based on "Basic Strategy"  
 Analyze dataframe made by Black Jack simulation.  
 And find a way to play the perfect Black Jack.  
 
-## Basic strategy
-A basic strategy is a cheat sheet for player action selection.  
-The player acts by comparing his hand with the face-up card of the dealer. You can generally narrow down the combination of your hand and the face-up dealer's hand to 290 ways. The basic strategy provides the player's best action from the expected value in each pattern.  
+## Basic Strategy
+"Basic Strategy" is a cheat sheet for selection of player action.  
+The player acts by comparing his hand with the face-up card of the dealer. You can generally narrow down the combination of your hand and the face-up dealer's hand to 290 ways. The "Basic Strategy" provides the player's best action from the expected value in each pattern.  
 
 <div align="center">
 <img src="./img/basic_strategy.PNG" width=300>
@@ -13,8 +13,8 @@ The player acts by comparing his hand with the face-up card of the dealer. You c
 
 ## Details
 First of all, Blackjack has no psychological warfare elements and is completely mathematical and probabilistic.  
-Hijacking the basic strategy and playing mechanically is the most expected value. In addition, the dealer does not have his own intention according to the rules and acts mechanically. Therefore, it is possible to completely reproduce blackjack using a basic strategy by computer simulation.  
-This project can analyze blackjack by simulating the battle between one player and the dealer and recording the result of the battle in DataFrame. Then, we will clarify the importance of actually acting according to the basic strategy.  
+It is said that playing mechanically based on "Basic Strategy" has the highest winning percentage. In addition, the dealer does not have his own intention according to the rules and acts mechanically. Therefore, it is possible to completely reproduce blackjack using "Basic Strategy" by computer simulation.  
+This project can analyze blackjack by simulating the battle between one player and the dealer and recording the result of the battle in DataFrame.  
 The features and merits of using this project are as follows.  
 - You can get blackjack game data.
 - A more accurate analysis can be performed by playing a specified number of times.
@@ -66,7 +66,7 @@ df = a.main()
 ```
 import analysis_black_jack as abj
 
-b = abj.AnalysisDf(df)
+b = abj.WinPercentage(df)
 # Graph the transition of the winning percentage by dividing it into 1000.
 cut_num_list, percentage = b.win_percentage(how="cut", split=1000, plot=True)
 ```
@@ -77,7 +77,7 @@ cut_num_list, percentage = b.win_percentage(how="cut", split=1000, plot=True)
 #### Win rate of each basic strategy.
 
 ```
-b = abj.AnalysisDf(df)
+b = abj.WinPercentage(df)
 basic_strategy_percentage = b.basic_strategy_win_percentage(plot=True, win_coin=False)
 ```
 
@@ -86,7 +86,7 @@ basic_strategy_percentage = b.basic_strategy_win_percentage(plot=True, win_coin=
 
 #### Create an optimized basic strategy.
 
-You can create a newly optimized basic strategy.  
+You can create a newly optimized "Basic Strategy".  
 Based on the output basic strategy, blackjack simulation is performed again, and it is optimized by repeating it.  
 The example below is optimized for 7 generations.
 
